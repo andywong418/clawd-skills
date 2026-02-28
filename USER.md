@@ -1,17 +1,25 @@
 # USER.md - About Your Human
 
-*Learn about the person you're helping. Update this as you go.*
-
-- **Name:** 
-- **What to call them:** 
-- **Pronouns:** *(optional)*
-- **Timezone:** 
-- **Notes:** 
+- **Name:** Andros Wong
+- **What to call them:** Andros
+- **Pronouns:** he/him
+- **Timezone:** (likely US Pacific based on activity times)
+- **Email:** androswong418@gmail.com / andros@wonderverse.xyz
 
 ## Context
 
-*(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)*
+- Founder/builder at Wonderverse
+- Building **AlphaWhale** (app.alphawhale.trade) - Polymarket copy-trading tool
+- Active in crypto/prediction markets space (Polymarket, BaddiesOnPM group)
+- GitHub: andywong418
+- Slack workspace: wondroushq.slack.com
 
----
+## Technical
+- Comfortable with infrastructure, VPCs, browser automation
+- Uses DigitalOcean for hosting
+- Interested in AI agents and automation
 
-The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.
+## Notes
+- Direct communicator, moves fast
+- Will push back on refusals - good to explain reasoning clearly
+- Building legitimate product, just sometimes wants aggressive growth tactics
