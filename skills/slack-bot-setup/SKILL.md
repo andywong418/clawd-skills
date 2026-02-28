@@ -5,7 +5,7 @@ description: Create a new Slack bot app with full DM and messaging capabilities.
 
 # Slack Bot Setup
 
-Create a fully-configured Slack bot with DM capabilities via browser automation.
+Create a fully-configured Slack bot with DM and thread mention capabilities via browser automation.
 
 ## Browser Automation Flow
 
@@ -43,38 +43,96 @@ For each scope, repeat:
 2. Type scope name in the combobox (e.g., `im:write`)
 3. Click the matching option in dropdown
 
-**Required scopes for DM bot:**
+**Required scopes for DM and thread mention bot:**
 - `im:write` - Open DM conversations
 - `im:history` - Read DM history  
 - `chat:write` - Send messages
 - `channels:read` - List channels
 - `channels:history` - Read channel messages
 - `users:read` - List workspace members
+- `app_mentions:read` - **REQUIRED for @mention responses in threads**
+
+**Optional but recommended scopes:**
+- `groups:read` - Private channel info
+- `groups:history` - Private channel messages
+- `mpim:read` - Group DM info
+- `mpim:history` - Group DM messages
+- `reactions:read` - Read reactions
+- `reactions:write` - Add reactions
+- `pins:read` - Read pins
+- `pins:write` - Add pins
+- `files:read` - Read file info
+- `files:write` - Upload files
 
 ### 4. Enable Socket Mode
 
 ```
+browser action=navigate targetUrl="https://app.slack.com/app-settings/TEAM_ID/APP_ID/socket-mode"
+```
+
+1. Toggle "Enable Socket Mode" ON (switch element)
+2. A modal may appear to generate a token
+
+**Generate App-Level Token:**
+```
 browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/general"
 ```
 
-1. Find Socket Mode toggle, click to enable
-2. When prompted, click "Generate Token"
-3. Enter token name, select `connections:write` scope
-4. Click Generate
-5. **Copy the `xapp-...` token from the page**
+1. Scroll to "App-Level Tokens" section
+2. Click "Generate Token and Scopes" button
+3. Enter a token name (e.g., "socket-token")
+4. Click "Add Scope" and select `connections:write`
+5. Click "Generate"
+6. **Copy the `xapp-...` token from the modal**
 
-### 5. Subscribe to Events
+### 5. Subscribe to Events (CRITICAL)
 
 ```
 browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/event-subscriptions"
 ```
 
-1. Toggle "Enable Events" ON
-2. Expand "Subscribe to bot events"
-3. Click "Add Bot User Event"
-4. Add: `message.im`, `app_mention`
+1. Toggle "Enable Events" ON (if not already enabled by Socket Mode)
+2. Click to expand "Subscribe to bot events" section
+3. Add these events:
 
-### 6. Install to Workspace
+**Required events for DMs and thread mentions:**
+
+| Event | Description | Required Scope |
+|-------|-------------|----------------|
+| `message.im` | DM messages | `im:history` |
+| `app_mention` | @mentions in channels/threads | `app_mentions:read` |
+
+**Optional events for full functionality:**
+
+| Event | Description | Required Scope |
+|-------|-------------|----------------|
+| `message.channels` | Public channel messages | `channels:history` |
+| `message.groups` | Private channel messages | `groups:history` |
+| `message.mpim` | Group DM messages | `mpim:history` |
+| `reaction_added` | Reaction notifications | `reactions:read` |
+| `reaction_removed` | Reaction removal notifications | `reactions:read` |
+| `member_joined_channel` | User joins channel | `channels:read` |
+| `member_left_channel` | User leaves channel | `channels:read` |
+
+For each event:
+1. Click "Add Bot User Event" button
+2. Type event name in dropdown
+3. Click to select
+
+4. Click "Save Changes" at bottom of page
+
+### 6. Enable App Home (for DMs)
+
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/app-home"
+```
+
+1. Find "Messages Tab" section
+2. Toggle ON "Allow users to send Slash commands and messages from the messages tab"
+
+This enables DM functionality with the bot.
+
+### 7. Install to Workspace
 
 ```
 browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/install-on-team"
@@ -84,9 +142,16 @@ browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/install-on-
 2. On OAuth page, click "Allow" button
 3. **Copy the `xoxb-...` Bot Token**
 
-### 7. Reinstall After Scope Changes
+### 8. Reinstall After Scope/Event Changes
 
-After adding scopes, navigate directly to OAuth URL:
+After adding scopes or events, you must reinstall:
+
+Option A - Via UI:
+1. Go to "Install App" page
+2. Click "Reinstall to Workspace"
+3. Click "Allow"
+
+Option B - Direct OAuth URL:
 ```
 browser action=navigate targetUrl="https://slack.com/oauth/v2/authorize?client_id=CLIENT_ID&team=TEAM_ID&install_redirect=oauth&scope=COMMA_SEPARATED_SCOPES"
 ```
@@ -95,8 +160,26 @@ Then click "Allow" button.
 
 ## Extracting Tokens
 
-**Bot Token**: On OAuth & Permissions page, find textbox with `xoxb-...` value
-**App Token**: On Basic Information page under App-Level Tokens section
+**Bot Token (`xoxb-...`)**: 
+- Location: OAuth & Permissions page
+- Look for: `textbox [disabled]` containing `xoxb-...`
+- Label: "Bot User OAuth Token"
+
+**App Token (`xapp-...`)**: 
+- Location: Basic Information page → App-Level Tokens section
+- Click on token name to reveal value in modal
+- Look for: `textbox` containing `xapp-...`
+
+## Complete Bot Configuration Checklist
+
+Before your bot can respond to DMs and thread mentions:
+
+- [ ] Bot scopes include: `im:write`, `im:history`, `chat:write`, `app_mentions:read`, `users:read`
+- [ ] Socket Mode is enabled
+- [ ] App-Level Token generated with `connections:write` scope
+- [ ] Event subscriptions include: `message.im`, `app_mention`
+- [ ] App Home Messages Tab is enabled
+- [ ] App is installed/reinstalled to workspace after all changes
 
 ## Test the Bot
 
@@ -130,6 +213,9 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 | `channel_not_found` | Invalid channel/DM ID | Use `conversations.open` first |
 | `not_in_channel` | Bot not in channel | Add `channels:join` scope or invite bot |
 | `user_not_found` | Invalid user ID | Check ID with `users.list` |
+| No DM events received | `message.im` not subscribed | Add event in Event Subscriptions |
+| No @mention events | `app_mention` not subscribed | Add event + `app_mentions:read` scope |
+| Socket not connecting | Missing `xapp-...` token | Generate App-Level Token |
 
 ## Browser Automation Notes
 
@@ -138,6 +224,13 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 2. A combobox appears with `expanded` state - type the scope name
 3. Options filter - click the exact match option
 4. Scope appears in table, warning banner shows "reinstall required"
+
+**Event subscription workflow:**
+1. Click "Add Bot User Event" button
+2. Type event name (e.g., `message.im`)
+3. Click matching option
+4. Repeat for each event
+5. Click "Save Changes" at page bottom
 
 **Reinstall without UI navigation:**
 Extract the OAuth URL from "Reinstall to Workspace" link, navigate directly:
@@ -149,8 +242,11 @@ https://slack.com/oauth/v2/authorize?client_id=XXX&team=TEAM_ID&install_redirect
 - App dropdown: `combobox "app_select"`
 - Scope table: `table` with `rowgroup` containing scope rows
 - Add scope button: `button "Add an OAuth Scope"`
+- Add event button: `button "Add Bot User Event"`
 - Reinstall link: `link "Reinstall to [Workspace]"`
 - Token textbox: `textbox [disabled]` containing `xoxb-...`
+- Save button: `button "Save Changes"`
+- Toggle switch: `switch` or `generic [cursor=pointer]` with "On"/"Off" text
 
 **Session persistence:**
 Use `profile=clawd` to maintain login state across browser restarts.
@@ -166,10 +262,51 @@ To use the bot with Clawdbot, update gateway config:
       "enabled": true,
       "mode": "socket",
       "botToken": "xoxb-...",
-      "appToken": "xapp-..."
+      "appToken": "xapp-...",
+      "dm": {
+        "policy": "open",
+        "allowFrom": ["*"]
+      },
+      "groupPolicy": "open"
     }
   }
 }
 ```
 
-Then restart: `gateway restart`
+For restricted access:
+```json
+{
+  "channels": {
+    "slack": {
+      "enabled": true,
+      "mode": "socket", 
+      "botToken": "xoxb-...",
+      "appToken": "xapp-...",
+      "dm": {
+        "policy": "pairing",
+        "allowFrom": ["U123ABC"]
+      },
+      "groupPolicy": "allowlist",
+      "channels": {
+        "#general": { "allow": true, "requireMention": true }
+      }
+    }
+  }
+}
+```
+
+Then restart: `gateway action=restart`
+
+## Multi-Bot Setup (Same Workspace)
+
+When running multiple Clawdbot instances with different Slack apps:
+1. Each app needs its own `botToken` and `appToken`
+2. Each app should have unique event subscriptions
+3. Use `allowBots: true` in channel config if bots need to see each other's messages
+4. Be careful of bot-to-bot reply loops - use `requireMention` to prevent
+
+To allow bots to DM each other:
+1. Both bots need `im:write` and `im:history` scopes
+2. Both bots need `message.im` event subscription
+3. One bot opens conversation with `conversations.open`
+4. Messages flow via DM channel
