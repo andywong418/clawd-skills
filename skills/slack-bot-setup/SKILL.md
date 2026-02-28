@@ -5,78 +5,98 @@ description: Create a new Slack bot app with full DM and messaging capabilities.
 
 # Slack Bot Setup
 
-Create a fully-configured Slack bot with DM capabilities in one shot.
+Create a fully-configured Slack bot with DM capabilities via browser automation.
 
-## Prerequisites
+## Browser Automation Flow
 
-- Browser automation available (Clawdbot browser or Chrome)
-- Logged into Slack workspace at api.slack.com
+### 1. Start Browser & Login Check
 
-## Quick Setup Flow
+```
+browser action=start profile=clawd
+browser action=navigate targetUrl="https://api.slack.com/apps"
+browser action=snapshot
+```
 
-### 1. Create the App
+If not logged in, navigate to workspace signin first.
 
-Navigate to `https://api.slack.com/apps` and click "Create New App" → "From scratch".
+### 2. Create New App
 
-- **App Name**: Choose a descriptive name (e.g., `mybot`)
-- **Workspace**: Select target workspace
+```
+browser action=navigate targetUrl="https://api.slack.com/apps"
+browser action=snapshot
+# Click "Create New App" button
+# Click "From scratch" option
+# Fill app name in textbox
+# Select workspace from dropdown  
+# Click "Create App" button
+```
 
-### 2. Add Bot Scopes (OAuth & Permissions)
+### 3. Add Bot Scopes
 
-Go to **OAuth & Permissions** in the sidebar. Under **Bot Token Scopes**, add:
+Navigate to OAuth & Permissions:
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/oauth"
+```
 
-| Scope | Purpose |
-|-------|---------|
-| `im:write` | Open DM conversations with users |
-| `im:history` | Read DM message history |
-| `chat:write` | Send messages |
-| `channels:read` | List public channels |
-| `channels:history` | Read channel messages |
-| `users:read` | List workspace members |
+For each scope, repeat:
+1. Click "Add an OAuth Scope" button
+2. Type scope name in the combobox (e.g., `im:write`)
+3. Click the matching option in dropdown
 
-**Optional scopes** (add as needed):
-- `users:read.email` - Get user email addresses
-- `chat:write.public` - Post to channels without joining
-- `reactions:write` - Add emoji reactions
-- `files:write` - Upload files
+**Required scopes for DM bot:**
+- `im:write` - Open DM conversations
+- `im:history` - Read DM history  
+- `chat:write` - Send messages
+- `channels:read` - List channels
+- `channels:history` - Read channel messages
+- `users:read` - List workspace members
 
-### 3. Enable Socket Mode (for real-time events)
+### 4. Enable Socket Mode
 
-Go to **Socket Mode** in sidebar:
-1. Toggle **Enable Socket Mode** ON
-2. Generate an **App-Level Token** with `connections:write` scope
-3. Name it (e.g., `socket-token`)
-4. Copy the `xapp-...` token
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/general"
+```
 
-### 4. Subscribe to Events
+1. Find Socket Mode toggle, click to enable
+2. When prompted, click "Generate Token"
+3. Enter token name, select `connections:write` scope
+4. Click Generate
+5. **Copy the `xapp-...` token from the page**
 
-Go to **Event Subscriptions**:
-1. Toggle **Enable Events** ON
-2. Under **Subscribe to bot events**, add:
-   - `message.im` - DM messages to the bot
-   - `message.channels` - Channel messages (if needed)
-   - `app_mention` - When bot is @mentioned
+### 5. Subscribe to Events
 
-### 5. Install to Workspace
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/event-subscriptions"
+```
 
-Go to **Install App** in sidebar:
-1. Click **Install to Workspace**
-2. Review permissions and click **Allow**
-3. Copy the **Bot User OAuth Token** (`xoxb-...`)
+1. Toggle "Enable Events" ON
+2. Expand "Subscribe to bot events"
+3. Click "Add Bot User Event"
+4. Add: `message.im`, `app_mention`
 
-### 6. Reinstall After Scope Changes
+### 6. Install to Workspace
 
-After adding new scopes, you MUST reinstall:
-1. Go to **OAuth & Permissions**
-2. Click **Reinstall to [Workspace]**
-3. Approve the updated permissions
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/install-on-team"
+```
 
-## Token Reference
+1. Click "Install to Workspace" 
+2. On OAuth page, click "Allow" button
+3. **Copy the `xoxb-...` Bot Token**
 
-| Token Type | Format | Purpose |
-|------------|--------|---------|
-| Bot Token | `xoxb-...` | API calls (send messages, list users) |
-| App Token | `xapp-...` | Socket Mode connection |
+### 7. Reinstall After Scope Changes
+
+After adding scopes, navigate directly to OAuth URL:
+```
+browser action=navigate targetUrl="https://slack.com/oauth/v2/authorize?client_id=CLIENT_ID&team=TEAM_ID&install_redirect=oauth&scope=COMMA_SEPARATED_SCOPES"
+```
+
+Then click "Allow" button.
+
+## Extracting Tokens
+
+**Bot Token**: On OAuth & Permissions page, find textbox with `xoxb-...` value
+**App Token**: On Basic Information page under App-Level Tokens section
 
 ## Test the Bot
 
@@ -111,14 +131,29 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 | `not_in_channel` | Bot not in channel | Add `channels:join` scope or invite bot |
 | `user_not_found` | Invalid user ID | Check ID with `users.list` |
 
-## Browser Automation Tips
+## Browser Automation Notes
 
-When automating setup via browser:
+**Scope picker workflow:**
+1. Click "Add an OAuth Scope" button (look for `ref` with text "Add an OAuth Scope")
+2. A combobox appears with `expanded` state - type the scope name
+3. Options filter - click the exact match option
+4. Scope appears in table, warning banner shows "reinstall required"
 
-1. **Scope picker**: Click "Add an OAuth Scope", type scope name, click the option
-2. **Reinstall flow**: Navigate directly to the OAuth URL shown in "Reinstall to Workspace" link
-3. **Allow button**: After reinstall navigation, click the "Allow" button on the OAuth page
-4. **Session persistence**: Use a persistent browser profile to stay logged in
+**Reinstall without UI navigation:**
+Extract the OAuth URL from "Reinstall to Workspace" link, navigate directly:
+```
+https://slack.com/oauth/v2/authorize?client_id=XXX&team=TEAM_ID&install_redirect=oauth&scope=scope1,scope2,scope3
+```
+
+**Common element patterns in snapshots:**
+- App dropdown: `combobox "app_select"`
+- Scope table: `table` with `rowgroup` containing scope rows
+- Add scope button: `button "Add an OAuth Scope"`
+- Reinstall link: `link "Reinstall to [Workspace]"`
+- Token textbox: `textbox [disabled]` containing `xoxb-...`
+
+**Session persistence:**
+Use `profile=clawd` to maintain login state across browser restarts.
 
 ## Clawdbot Integration
 
