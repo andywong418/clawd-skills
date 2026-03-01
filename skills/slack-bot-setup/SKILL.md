@@ -255,6 +255,10 @@ Use `profile=clawd` to maintain login state across browser restarts.
 
 To use the bot with Clawdbot, update gateway config:
 
+### Open Access (Recommended for most bots)
+
+Anyone can DM the bot and it responds in any channel:
+
 ```json
 {
   "channels": {
@@ -273,7 +277,17 @@ To use the bot with Clawdbot, update gateway config:
 }
 ```
 
-For restricted access:
+**Important settings:**
+- `dm.policy: "open"` — Anyone can DM without approval
+- `dm.allowFrom: ["*"]` — Allow all users (or list specific user IDs)
+- `groupPolicy: "open"` — Respond in any channel the bot is in
+
+⚠️ **Without these settings, users get a pairing code instead of a response!**
+
+### Restricted Access (For private/internal bots)
+
+Require approval before responding to new users:
+
 ```json
 {
   "channels": {
@@ -284,7 +298,7 @@ For restricted access:
       "appToken": "xapp-...",
       "dm": {
         "policy": "pairing",
-        "allowFrom": ["U123ABC"]
+        "allowFrom": ["U123ABC", "U456DEF"]
       },
       "groupPolicy": "allowlist",
       "channels": {
@@ -293,6 +307,11 @@ For restricted access:
     }
   }
 }
+```
+
+With `policy: "pairing"`, unknown users get a pairing code they must have approved:
+```bash
+clawdbot pairing approve slack <code>
 ```
 
 Then restart: `gateway action=restart`
