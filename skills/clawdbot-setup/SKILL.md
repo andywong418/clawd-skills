@@ -16,20 +16,26 @@ Create new Clawdbot instances with optimized workspace templates including:
 ### On a New Server
 
 ```bash
-# 1. Install Clawdbot
+# 1. Install Node.js (if needed)
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+
+# 2. Install Clawdbot
 npm install -g clawdbot
 
-# 2. Create workspace
+# 3. Create workspace
 mkdir -p ~/clawd && cd ~/clawd
 
-# 3. Copy templates from this skill
-cp /path/to/skills/clawdbot-setup/templates/* ~/clawd/
+# 4. Copy templates
+# (from this skill's templates/ folder)
 
-# 4. Initialize
+# 5. Initialize
 clawdbot init
+
+# 6. Install recommended skills (see below)
 ```
 
-### Template Files
+## Template Files
 
 Copy these to the new workspace:
 - `templates/SOUL.md` — Core identity and values
@@ -37,6 +43,46 @@ Copy these to the new workspace:
 - `templates/BOOTSTRAP.md` — First-run onboarding flow
 - `templates/USER.md` — Placeholder for human's info
 - `templates/TOOLS.md` — Local tool configuration
+- `templates/IDENTITY.md` — Agent identity
+- `templates/HEARTBEAT.md` — Heartbeat tasks
+
+## Recommended Skills
+
+Install these after setting up workspace:
+
+### 🧠 OpenCortex (Self-Improving Memory)
+Full memory architecture with nightly distillation, weekly synthesis, encrypted vault.
+```bash
+clawhub install opencortex
+bash skills/opencortex/scripts/install.sh
+```
+Source: https://github.com/JD2005L/opencortex
+
+### 🛡️ Vigil (Safety Guardrails)
+<2ms safety checks for destructive commands, exfiltration, SSRF, injection.
+```bash
+npm install vigil-agent-safety
+# Or via ClawHub:
+npx clawhub install vigil
+```
+Source: https://github.com/hexitlabs/vigil
+
+### 🤖 memU (Proactive Memory Framework)
+Memory framework for 24/7 proactive agents. Intention capture, memory-as-filesystem.
+```bash
+pip install memu
+# Or clone:
+git clone https://github.com/NevaMind-AI/memU.git
+```
+Source: https://github.com/NevaMind-AI/memU (11.9k ⭐)
+
+### Alternative: SIAS (Self-Improving Agent System)
+German/English WAL protocol implementation with .learnings/ folder and promotion system.
+```bash
+git clone https://github.com/iggyswelt/SIAS.git
+cp SIAS/templates/SOUL.md ~/clawd/
+```
+Source: https://github.com/iggyswelt/SIAS
 
 ## Key Protocols Included
 
@@ -62,19 +108,36 @@ Track memory health in `memory/interoceptive-state.json`:
 }
 ```
 
-## Recommended Skills to Install
+## Full Setup Script
 
-After setting up workspace, install these skills:
+For automated setup on a fresh server:
 
 ```bash
-# Self-improvement capabilities
-clawhub install self-improving-agent
+#!/bin/bash
+# clawdbot-full-setup.sh
 
-# Enhanced proactive behavior
-clawhub install proactive-agent
+set -e
 
-# Agent safety guardrails
-clawhub install vigil
+# Install Node.js
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+
+# Install Clawdbot
+npm install -g clawdbot
+
+# Create workspace
+mkdir -p ~/clawd && cd ~/clawd
+
+# Initialize (will prompt for API keys)
+clawdbot init
+
+# Install skills
+clawhub install opencortex
+bash skills/opencortex/scripts/install.sh
+
+npm install vigil-agent-safety
+
+echo "Setup complete! Configure channels with: clawdbot configure"
 ```
 
 ## Remote Setup
@@ -85,21 +148,15 @@ To set up Clawdbot on a remote server:
 # SSH to server
 ssh root@<server-ip>
 
-# Install Node.js if needed
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt-get install -y nodejs
+# Run setup
+curl -fsSL https://raw.githubusercontent.com/.../setup.sh | bash
 
-# Install Clawdbot
-npm install -g clawdbot
+# Or manual:
+# 1. Copy templates via SCP
+scp -r /root/clawd/skills/clawdbot-setup/templates/* root@<server-ip>:~/clawd/
 
-# Create and enter workspace
-mkdir -p ~/clawd && cd ~/clawd
-
-# Copy templates (from local machine)
-scp /root/clawd/skills/clawdbot-setup/templates/* root@<server-ip>:~/clawd/
-
-# Initialize and configure
-clawdbot init
+# 2. SSH and install skills
+ssh root@<server-ip> "cd ~/clawd && clawhub install opencortex && bash skills/opencortex/scripts/install.sh"
 ```
 
 ## Configuration
@@ -119,6 +176,8 @@ After copying templates, configure:
 ├── BOOTSTRAP.md     # First-run flow (deleted after)
 ├── USER.md          # Human's info
 ├── TOOLS.md         # Tool configuration
+├── IDENTITY.md      # Agent identity
+├── HEARTBEAT.md     # Heartbeat tasks
 ├── MEMORY.md        # Long-term memory (created by agent)
 └── memory/
     ├── YYYY-MM-DD.md           # Daily logs
@@ -126,3 +185,12 @@ After copying templates, configure:
     ├── working-buffer.md       # Context buffer
     └── interoceptive-state.json # Memory health
 ```
+
+## Skill Sources Summary
+
+| Skill | Purpose | Install |
+|-------|---------|---------|
+| OpenCortex | Self-improving memory | `clawhub install opencortex` |
+| Vigil | Safety guardrails | `npm install vigil-agent-safety` |
+| memU | Proactive 24/7 agents | `pip install memu` |
+| SIAS | WAL + learning system | `git clone iggyswelt/SIAS` |
