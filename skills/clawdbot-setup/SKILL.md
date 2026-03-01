@@ -32,7 +32,10 @@ mkdir -p ~/clawd && cd ~/clawd
 # 5. Initialize
 clawdbot init
 
-# 6. Install recommended skills (see below)
+# 6. Create MEMORY.md (IMPORTANT - don't skip!)
+# See "Critical: Memory Setup" section below
+
+# 7. Install recommended skills (see below)
 ```
 
 ## Template Files
@@ -178,13 +181,108 @@ After copying templates, configure:
 ├── TOOLS.md         # Tool configuration
 ├── IDENTITY.md      # Agent identity
 ├── HEARTBEAT.md     # Heartbeat tasks
-├── MEMORY.md        # Long-term memory (created by agent)
+├── MEMORY.md        # Long-term memory (MUST CREATE - see below)
 └── memory/
     ├── YYYY-MM-DD.md           # Daily logs
     ├── SESSION-STATE.md        # WAL state
     ├── working-buffer.md       # Context buffer
     └── interoceptive-state.json # Memory health
 ```
+
+## ⚠️ Critical: Memory Setup
+
+**Don't skip this!** Bots without proper memory setup will be forgetful.
+
+### 1. Create MEMORY.md with Initial Content
+
+```bash
+cat > ~/clawd/MEMORY.md << 'EOF'
+# [Bot Name] Memory
+
+## Identity
+- **Name:** [Bot name]
+- **Purpose:** [What this bot does]
+- **Workspace:** /root/clawd
+- **Server:** [hostname] ([IP])
+
+## Key Context
+- [Primary task/purpose]
+- [Important files/locations]
+- [Key integrations]
+
+## Lessons Learned
+- Always write important context to memory files - mental notes dont survive compaction
+- [Add lessons as you learn them]
+
+## Current Projects
+- [Active work]
+
+---
+*Update this file with lessons, decisions, and context worth remembering.*
+EOF
+```
+
+### 2. Create memory/ Directory Structure
+
+```bash
+mkdir -p ~/clawd/memory
+
+# Create initial daily log
+cat > ~/clawd/memory/$(date +%Y-%m-%d).md << 'EOF'
+# Daily Log - $(date +%Y-%m-%d)
+
+## Setup
+- Bot initialized
+- Memory structure created
+
+## Notes
+EOF
+
+# Create interoceptive state
+cat > ~/clawd/memory/interoceptive-state.json << 'EOF'
+{
+  "lastConsolidation": null,
+  "stalenessHours": 0,
+  "activeTopics": []
+}
+EOF
+```
+
+### 3. Enable Memory Search (Optional but Recommended)
+
+Memory semantic search requires an OpenAI or Google API key:
+
+```bash
+# Add to .env
+echo 'OPENAI_API_KEY=sk-...' >> ~/.clawdbot/.env
+
+# Or for Google:
+echo 'GOOGLE_API_KEY=...' >> ~/.clawdbot/.env
+```
+
+Without this, `memory_search` tool won't work and the bot can only read memory files directly.
+
+### 4. Slack Thread Context (If Using Slack)
+
+Add these to your Slack channel config to prevent thread amnesia:
+
+```json
+{
+  "channels": {
+    "slack": {
+      "thread": {
+        "inheritParent": true
+      },
+      "historyLimit": 50
+    }
+  }
+}
+```
+
+- `inheritParent: true` - Thread sessions inherit parent channel context
+- `historyLimit: 50` - Fetch last 50 messages into context
+
+**Both are required** - `inheritParent` alone won't fetch thread messages!
 
 ## Skill Sources Summary
 
