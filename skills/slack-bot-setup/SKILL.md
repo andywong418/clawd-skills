@@ -240,6 +240,7 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 | No DM events received | `message.im` not subscribed | Add event in Event Subscriptions |
 | No @mention events | `app_mention` not subscribed | Add event + `app_mentions:read` scope |
 | Socket not connecting | Missing `xapp-...` token | Generate App-Level Token |
+| Bot forgets thread context | Thread sessions are isolated | Add `thread.inheritParent: true` to config |
 
 ## Browser Automation Notes
 
@@ -295,11 +296,38 @@ Anyone can DM the bot and it responds in any channel:
         "policy": "open",
         "allowFrom": ["*"]
       },
-      "groupPolicy": "open"
+      "groupPolicy": "open",
+      "thread": {
+        "inheritParent": true
+      }
     }
   }
 }
 ```
+
+### Thread Context (Important!)
+
+By default, Slack threads create **isolated sessions** without parent message context. This causes the bot to lose track of what a thread is about:
+
+❌ **Without `inheritParent`:**
+- Bot posts: "Here's my SSH key..."
+- User replies in thread: "@bot done" 
+- Bot: "What's done?" (has no context)
+
+✅ **With `inheritParent: true`:**
+- Thread sessions inherit the parent channel transcript
+- Bot understands thread replies reference the parent message
+
+**Always add this to your Slack config:**
+```json
+"thread": {
+  "inheritParent": true
+}
+```
+
+Other thread options:
+- `historyScope: "thread"` (default) — each thread has its own history
+- `historyScope: "channel"` — threads share the channel's history
 
 **Important settings:**
 - `dm.policy: "open"` — Anyone can DM without approval
