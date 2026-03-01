@@ -132,7 +132,30 @@ browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/app-home"
 
 This enables DM functionality with the bot.
 
-### 7. Install to Workspace
+### 7. Enable Agent Mode (Optional but Recommended)
+
+Agent mode gives your bot a top-bar entry point and side-by-side view in Slack.
+
+```
+browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/app-assistant"
+```
+
+1. Find "Agent or Assistant" section
+2. Toggle ON "Mark this app as an agent app" (switch element)
+3. Optionally fill in "Agent or Assistant Overview" description
+4. Optionally configure "Suggested Prompts" (Dynamic or Fixed)
+5. A banner will appear saying reinstall is required
+6. Click "reinstall your app" link and click "Allow"
+
+**This adds the `assistant:write` scope automatically.**
+
+Benefits of Agent mode:
+- Bot appears in Slack's top bar for quick access
+- Side-by-side conversation view
+- Chat and History tabs replace the messages tab
+- Better UX for AI assistant interactions
+
+### 8. Install to Workspace
 
 ```
 browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/install-on-team"
@@ -142,7 +165,7 @@ browser action=navigate targetUrl="https://api.slack.com/apps/APP_ID/install-on-
 2. On OAuth page, click "Allow" button
 3. **Copy the `xoxb-...` Bot Token**
 
-### 8. Reinstall After Scope/Event Changes
+### 9. Reinstall After Scope/Event Changes
 
 After adding scopes or events, you must reinstall:
 
@@ -177,6 +200,7 @@ Before your bot can respond to DMs and thread mentions:
 - [ ] Bot scopes include: `im:write`, `im:history`, `chat:write`, `app_mentions:read`, `users:read`
 - [ ] Socket Mode is enabled
 - [ ] App-Level Token generated with `connections:write` scope
+- [ ] Agent mode enabled (adds `assistant:write` scope) — recommended for AI bots
 - [ ] Event subscriptions include: `message.im`, `app_mention`
 - [ ] App Home Messages Tab is enabled
 - [ ] App is installed/reinstalled to workspace after all changes
