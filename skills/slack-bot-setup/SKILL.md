@@ -240,7 +240,8 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 | No DM events received | `message.im` not subscribed | Add event in Event Subscriptions |
 | No @mention events | `app_mention` not subscribed | Add event + `app_mentions:read` scope |
 | Socket not connecting | Missing `xapp-...` token | Generate App-Level Token |
-| Bot forgets thread context | Thread sessions are isolated | Add `thread.inheritParent: true` to config |
+| Bot forgets thread context | Thread sessions are isolated | Add `thread.inheritParent: true` AND `historyLimit: 50` to config |
+| Bot can't read thread it's in | No history fetching configured | Add `historyLimit: 50` to Slack config |
 
 ## Browser Automation Notes
 
@@ -299,7 +300,8 @@ Anyone can DM the bot and it responds in any channel:
       "groupPolicy": "open",
       "thread": {
         "inheritParent": true
-      }
+      },
+      "historyLimit": 50
     }
   }
 }
@@ -309,21 +311,30 @@ Anyone can DM the bot and it responds in any channel:
 
 By default, Slack threads create **isolated sessions** without parent message context. This causes the bot to lose track of what a thread is about:
 
-❌ **Without `inheritParent`:**
+❌ **Without proper thread config:**
 - Bot posts: "Here's my SSH key..."
 - User replies in thread: "@bot done" 
 - Bot: "What's done?" (has no context)
 
-✅ **With `inheritParent: true`:**
+✅ **With proper thread config:**
 - Thread sessions inherit the parent channel transcript
+- Bot fetches recent thread messages into context
 - Bot understands thread replies reference the parent message
 
-**Always add this to your Slack config:**
+**Always add BOTH of these to your Slack config:**
 ```json
 "thread": {
   "inheritParent": true
-}
+},
+"historyLimit": 50
 ```
+
+| Setting | Purpose |
+|---------|---------|
+| `thread.inheritParent: true` | New thread sessions inherit parent channel transcript |
+| `historyLimit: 50` | **Fetch last N messages from thread/channel into context** |
+
+⚠️ **Common mistake:** Setting `inheritParent` but forgetting `historyLimit`. Without `historyLimit`, the bot won't actually fetch recent thread messages — it'll start each thread conversation with no history.
 
 Other thread options:
 - `historyScope: "thread"` (default) — each thread has its own history
