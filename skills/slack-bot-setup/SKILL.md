@@ -53,6 +53,7 @@ For each scope, repeat:
 - `app_mentions:read` - **REQUIRED for @mention responses in threads**
 
 **Optional but recommended scopes:**
+- `chat:write.public` - Post to public channels without being a member (useful for reporting bots)
 - `groups:read` - Private channel info
 - `groups:history` - Private channel messages
 - `mpim:read` - Group DM info
@@ -234,6 +235,7 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `missing_scope` | Scope not added or app not reinstalled | Add scope + reinstall app |
+| `missing_scope` on channel post | Bot not in channel + no `chat:write.public` | Invite bot to channel OR add `chat:write.public` scope |
 | `channel_not_found` | Invalid channel/DM ID | Use `conversations.open` first |
 | `not_in_channel` | Bot not in channel | Add `channels:join` scope or invite bot |
 | `user_not_found` | Invalid user ID | Check ID with `users.list` |
@@ -378,6 +380,36 @@ clawdbot pairing approve slack <code>
 ```
 
 Then restart: `gateway action=restart`
+
+## Channel Posting Permissions
+
+Slack has specific rules about which channels a bot can post to:
+
+| Scope | Can Post To |
+|-------|-------------|
+| `chat:write` | Channels the bot is a **member** of |
+| `chat:write.public` | Any **public** channel (even without being a member) |
+
+### Common Scenario: Reporting Bot
+
+If your bot needs to post reports/alerts to channels:
+
+**Option 1: Invite bot to channel (recommended)**
+- Works for both public and private channels
+- Bot only needs `chat:write`
+- `/invite @YourBot` in the channel
+
+**Option 2: Add `chat:write.public` scope**
+- Bot can post to any public channel without invite
+- Useful for bots that post to many channels
+- Won't work for private channels
+
+### Diagnosing `missing_scope` on Channel Posts
+
+If bot gets `missing_scope` when posting to a channel:
+1. Check if bot is a member of the channel (look for bot in channel members)
+2. If not a member → either invite the bot OR add `chat:write.public`
+3. If it's a private channel → bot MUST be invited (no workaround)
 
 ## Multi-Bot Setup (Same Workspace)
 
