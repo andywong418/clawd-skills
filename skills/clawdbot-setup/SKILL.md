@@ -395,6 +395,28 @@ Common fixes:
 clawdbot doctor --fix
 ```
 
+### 7. Browser Memory Cleanup (For 2GB Servers)
+
+Install the cleanup script and cron job:
+```bash
+# Copy cleanup script
+scp /root/clawd/skills/browser-cleanup/scripts/cleanup-chrome.sh root@SERVER:/usr/local/bin/
+ssh root@SERVER "chmod +x /usr/local/bin/cleanup-chrome.sh"
+
+# Add cron (every 2 minutes for 2GB servers)
+ssh root@SERVER "(crontab -l 2>/dev/null | grep -v cleanup-chrome; echo '*/2 * * * * /usr/local/bin/cleanup-chrome.sh') | crontab -"
+```
+
+**Agent instructions** — Add to TOOLS.md on the new server:
+```markdown
+### Browser Timeout Recovery
+If browser snapshot times out:
+1. Run: `/usr/local/bin/cleanup-chrome.sh`
+2. Wait 3 seconds, retry (up to 2 times)
+3. If still failing: `gateway action=restart`
+Never use pkill/kill on chrome directly.
+```
+
 ## Complete Remote Deployment Script
 
 Based on lessons learned, here's a bulletproof deployment:

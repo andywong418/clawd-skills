@@ -173,6 +173,52 @@ journalctl -t cleanup-chrome --since "1 hour ago"
 grep cleanup-chrome /var/log/syslog | tail -20
 ```
 
+## Auto-Retry Pattern
+
+When browser operations timeout, clean memory and retry:
+
+```bash
+# cleanup-and-retry.sh - Run cleanup and signal gateway to retry
+#!/bin/bash
+/usr/local/bin/cleanup-chrome.sh
+sleep 2
+# Gateway will auto-retry pending browser operations
+```
+
+### For Agents: Retry Logic
+
+If you hit a browser timeout, try this pattern:
+
+1. **Run cleanup script:**
+   ```bash
+   /usr/local/bin/cleanup-chrome.sh
+   ```
+
+2. **Wait 2-3 seconds** for memory to free
+
+3. **Retry the browser operation**
+
+4. **If still failing after 2 retries**, restart gateway:
+   ```bash
+   gateway action=restart
+   ```
+
+### Automatic Retry in Sessions
+
+Add this to your agent's knowledge (TOOLS.md or AGENTS.md):
+
+```markdown
+### Browser Timeout Recovery
+
+If browser snapshot/action times out:
+1. Run: `/usr/local/bin/cleanup-chrome.sh`
+2. Wait 3 seconds
+3. Retry the operation (up to 2 times)
+4. If still failing: `gateway action=restart`
+
+Never use pkill/kill on chrome directly.
+```
+
 ## Troubleshooting
 
 ### Browser snapshots timing out
