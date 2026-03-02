@@ -40,11 +40,27 @@ Add whatever helps you do your job. This is your cheat sheet.
 **Droplets:**
 - **clawdbot-1** (143.198.96.99) - Main server, 2GB RAM, this instance (Naruto bot)
 - **openclaw-2** (24.199.102.212) - Secondary server, 2GB RAM, viralfarmbot
+- **alphawhalebot** (167.71.171.101) - Alpha Content bot
 
 **Slack Bots:**
 - **Naruto** (A0AHMHKE0Q6) - My bot, runs on clawdbot-1
 - **viralfarmbot** (A0AJ549031P) - U0AHKS555U3, runs on openclaw-2
+- **Alpha Content** (A0AHSBCJU3X) - U0AJ5PFD3N0, runs on alphawhalebot
 - **Clawvicular** (A0AHV51MTQ8) - Publicly distributed app
+
+### 📎 Slack File Handling (Required Scopes)
+
+For bots to read images/files attached in Slack messages, they need:
+- **`files:read`** - Required to download file attachments
+- **`files:write`** - Required to upload files
+
+Without `files:read`, the bot gets Slack's login page instead of the actual file.
+
+**To add scopes:**
+1. Go to https://api.slack.com/apps/<APP_ID>/oauth
+2. Add scopes under "Bot Token Scopes"
+3. Click "Reinstall to Workspace"
+4. Click "Allow" on the OAuth page
 
 ### ⚠️ Chrome / Browser Process Management
 
