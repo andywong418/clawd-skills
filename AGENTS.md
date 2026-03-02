@@ -24,6 +24,16 @@ You wake up fresh each session. These files are your continuity:
 
 Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
 
+### 🔄 Context Recovery (When You Lose Track)
+
+When you lose context mid-conversation or feel confused:
+1. **Check the current message thread** — read recent messages in this thread
+2. **Check past interactions** — use message tool to read history with this user
+3. **Read today's memory** — `memory/YYYY-MM-DD.md` for recent context
+4. **Search memory** — use `memory_search` for relevant past info
+
+Don't ask "what were we talking about?" — figure it out yourself first.
+
 ### 🧠 MEMORY.md - Your Long-Term Memory
 - **ONLY load in main session** (direct chats with your human)
 - **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)
