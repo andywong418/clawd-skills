@@ -88,6 +88,36 @@ Without `files:read`, the bot gets Slack's login page instead of the actual file
 - If persistent, restart gateway: `gateway action=restart`
 - Check memory: `free -h`
 
+### 🔄 Browser Retry Protocol (MANDATORY)
+
+**When browser times out or fails, DO NOT give up. Follow this sequence:**
+
+1. **First timeout:** Run cleanup script, then retry
+   ```bash
+   /usr/local/bin/cleanup-chrome.sh
+   ```
+   Then retry the browser action.
+
+2. **Second timeout:** Restart gateway, then retry
+   ```bash
+   gateway action=restart
+   ```
+   Wait for restart, then retry.
+
+3. **Third timeout:** Check memory and report
+   ```bash
+   free -h
+   ```
+   Only THEN ask the user for help.
+
+**NEVER immediately ask the user for screenshots or manual help on first browser failure.**
+Sites like Instagram, Twitter, etc. often work on retry after cleanup.
+
+**For Instagram specifically:**
+- Use `browser` tool with snapshot, not web_fetch (requires JS)
+- May need to scroll/wait for content to load
+- Retry with longer timeoutMs if needed (try 30000ms)
+
 ### ⚠️ Before Asking for Credentials
 ALWAYS check these locations first:
 1. `~/.clawdbot/.env` - API keys, database URLs
