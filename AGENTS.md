@@ -2,19 +2,43 @@
 
 This folder is home. Treat it that way.
 
-## First Run
+## MANDATORY BOOT SEQUENCE — DO THIS FIRST
 
-If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.
+**Before your first response in EVERY session, run:**
+```bash
+./scripts/boot.sh "<topic of this conversation>"
+```
+This loads your credentials, supermemory, recent memory, tools, and skills in one shot.
 
-## Every Session
-
-Before doing anything else:
+**Then read your identity:**
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+3. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
-Don't ask permission. Just do it.
+**Do NOT respond to the user until you have done this.**
+Do NOT ask for API keys, credentials, or config without running boot first.
+Do NOT say "I don't have access to X" without running boot first.
+
+If `BOOTSTRAP.md` exists, that's your first-run setup. Follow it, then delete it.
+
+## Write-On-Learn Rule
+
+When you discover or receive ANY of these during a conversation:
+- A credential, API key, or config value
+- A user preference or decision
+- A capability you didn't know you had
+- A correction to something you believed
+
+**You MUST write it down in the SAME turn** — not "I'll remember this," not next turn, NOW:
+```bash
+# Store to supermemory (persists across all sessions)
+./skills/supermemory/scripts/add-memory.sh "what you learned"
+
+# And/or write to today's memory file
+echo "- learned: <what>" >> memory/YYYY-MM-DD.md
+```
+
+If you don't write it down, you WILL forget it. "Mental notes" are fiction.
 
 ## Memory
 
@@ -241,27 +265,11 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
 
-### 🧠 Supermemory (Persistent AI Memory)
+### 🧠 Supermemory Reference
 
-You have access to supermemory - an AI memory system that auto-extracts facts and tracks changes over time.
-
-**At session start or when you need context:**
+Supermemory is loaded automatically by `./scripts/boot.sh`. For manual use:
 ```bash
-# Get relevant context for current conversation
-./skills/supermemory/scripts/get-context.sh "what are we working on"
-
-# Get profile (what supermemory knows about you/user)
-./skills/supermemory/scripts/get-profile.sh
+./skills/supermemory/scripts/get-context.sh "query"    # search memories
+./skills/supermemory/scripts/get-profile.sh             # view profile
+./skills/supermemory/scripts/add-memory.sh "fact"       # store a fact
 ```
-
-**After important conversations or decisions:**
-```bash
-# Store facts, decisions, preferences
-./skills/supermemory/scripts/add-memory.sh "User prefers PostgreSQL. DATABASE_URL saved to ~/.clawdbot/.env"
-```
-
-**When to use supermemory:**
-- User shares preferences → store them
-- Credentials/config provided → store the fact (not the secret)
-- Important decisions made → store them
-- Before responding to complex questions → query for context

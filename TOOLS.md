@@ -118,10 +118,6 @@ Sites like Instagram, Twitter, etc. often work on retry after cleanup.
 - May need to scroll/wait for content to load
 - Retry with longer timeoutMs if needed (try 30000ms)
 
-### ⚠️ Before Asking for Credentials
-ALWAYS check these locations first:
-1. `~/.clawdbot/.env` - API keys, database URLs
-2. `/root/clawd/TOOLS.md` - documented credentials  
-3. `memory/*.md` - recent context
+### ⚠️ Credentials
 
-If you saved something, it's probably still there. Check before asking!
+Run `./scripts/boot.sh` — it shows all available credentials at startup. Never ask for something boot already told you about.
