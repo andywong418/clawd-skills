@@ -91,6 +91,36 @@ When context hits 60% (check via `session_status`):
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
 
+### 🧠 Supermemory (Persistent AI Memory)
+
+You have access to supermemory - an AI memory system that auto-extracts facts and tracks changes over time.
+
+**At session start or when you need context:**
+```bash
+# Get relevant context for current conversation
+./skills/supermemory/scripts/get-context.sh "what are we working on"
+
+# Get profile (what supermemory knows about you/user)
+./skills/supermemory/scripts/get-profile.sh
+```
+
+**After important conversations or decisions:**
+```bash
+# Store facts, decisions, preferences
+./skills/supermemory/scripts/add-memory.sh "User prefers PostgreSQL. DATABASE_URL saved to ~/.clawdbot/.env"
+
+# Store with user context
+./skills/supermemory/scripts/add-memory.sh "Andros wants memory to be super good" --user andros
+```
+
+**When to use supermemory:**
+- User shares preferences → store them
+- Credentials/config provided → store the fact (not the secret)
+- Important decisions made → store them
+- Before responding to complex questions → query for context
+
+Supermemory extracts facts automatically - just tell it what happened in natural language.
+
 ### 📋 Heartbeat-by-Heartbeat Logging
 
 For any productive heartbeat, log to `memory/YYYY-MM-DD.md` with:

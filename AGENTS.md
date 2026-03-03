@@ -240,3 +240,28 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+### 🧠 Supermemory (Persistent AI Memory)
+
+You have access to supermemory - an AI memory system that auto-extracts facts and tracks changes over time.
+
+**At session start or when you need context:**
+```bash
+# Get relevant context for current conversation
+./skills/supermemory/scripts/get-context.sh "what are we working on"
+
+# Get profile (what supermemory knows about you/user)
+./skills/supermemory/scripts/get-profile.sh
+```
+
+**After important conversations or decisions:**
+```bash
+# Store facts, decisions, preferences
+./skills/supermemory/scripts/add-memory.sh "User prefers PostgreSQL. DATABASE_URL saved to ~/.clawdbot/.env"
+```
+
+**When to use supermemory:**
+- User shares preferences → store them
+- Credentials/config provided → store the fact (not the secret)
+- Important decisions made → store them
+- Before responding to complex questions → query for context
