@@ -41,6 +41,12 @@ cd "$WORKSPACE"
 echo "📄 Copying templates..."
 if [ -d "$TEMPLATES_DIR" ]; then
     cp -n "$TEMPLATES_DIR"/*.md "$WORKSPACE/" 2>/dev/null || true
+    # Copy scripts directory (boot.sh, etc.)
+    if [ -d "$TEMPLATES_DIR/scripts" ]; then
+        mkdir -p "$WORKSPACE/scripts"
+        cp -n "$TEMPLATES_DIR/scripts"/* "$WORKSPACE/scripts/" 2>/dev/null || true
+        chmod +x "$WORKSPACE/scripts"/*.sh 2>/dev/null || true
+    fi
     echo "   Templates copied from skill"
 else
     echo "   ⚠️  Templates not found at $TEMPLATES_DIR"
@@ -67,6 +73,11 @@ fi
 echo ""
 echo "🛡️  Installing Vigil (safety guardrails)..."
 npm install vigil-agent-safety 2>/dev/null || echo "   ⚠️  Vigil install failed (optional)"
+
+echo ""
+echo "🪝 Enabling hooks (boot-md, session-memory)..."
+clawdbot hooks enable boot-md 2>/dev/null || echo "   ⚠️  boot-md hook failed (may need manual enable)"
+clawdbot hooks enable session-memory 2>/dev/null || echo "   ⚠️  session-memory hook failed (may need manual enable)"
 
 echo ""
 echo "✅ Setup complete!"

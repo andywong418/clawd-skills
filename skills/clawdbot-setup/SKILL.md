@@ -6,6 +6,8 @@ description: Create and configure new Clawdbot instances with best-practice work
 # Clawdbot Setup
 
 Create new Clawdbot instances with optimized workspace templates including:
+- **Auto-Boot Sequence** (loads context/credentials/supermemory on gateway start)
+- **Session Memory Hook** (saves context when running /new)
 - WAL Protocol (Write-Ahead Logging for memory persistence)
 - Working Buffer Protocol (context recovery after compaction)
 - Interoceptive State tracking (memory health awareness)

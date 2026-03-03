@@ -97,7 +97,11 @@ if [[ -d "$SKILLS_DIR" ]]; then
   for skill_dir in "$SKILLS_DIR"/*/; do
     skill_name=$(basename "$skill_dir")
     if [[ -f "$skill_dir/SKILL.md" ]]; then
-      desc=$(head -3 "$skill_dir/SKILL.md" | grep -v '^#' | grep -v '^$' | head -1)
+      # Try to get description from YAML frontmatter
+      desc=$(grep -A1 "^description:" "$skill_dir/SKILL.md" 2>/dev/null | head -1 | sed 's/description: *//' | cut -c1-60)
+      if [[ -z "$desc" ]]; then
+        desc="(no description)"
+      fi
       echo "  - $skill_name: $desc"
     else
       echo "  - $skill_name"
