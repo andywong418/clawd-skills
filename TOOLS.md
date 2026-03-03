@@ -87,3 +87,11 @@ Without `files:read`, the bot gets Slack's login page instead of the actual file
 - If browser snapshots timeout, the cleanup script should help
 - If persistent, restart gateway: `gateway action=restart`
 - Check memory: `free -h`
+
+### ⚠️ Before Asking for Credentials
+ALWAYS check these locations first:
+1. `~/.clawdbot/.env` - API keys, database URLs
+2. `/root/clawd/TOOLS.md` - documented credentials  
+3. `memory/*.md` - recent context
+
+If you saved something, it's probably still there. Check before asking!

@@ -34,6 +34,21 @@ When you lose context mid-conversation or feel confused:
 
 Don't ask "what were we talking about?" — figure it out yourself first.
 
+### 🔑 Before Asking for Credentials or Config
+
+**NEVER ask for something you might already have.** Check first:
+1. `~/.clawdbot/.env` — API keys, database URLs, tokens
+2. `TOOLS.md` — documented credentials and connection info
+3. `memory/*.md` — recently saved config
+4. `memory_search` — semantic search for "database", "API key", etc.
+
+If you saved something earlier, it's still there. **Check before asking!**
+
+Common locations:
+- Database URLs → `~/.clawdbot/.env` as `DATABASE_URL`
+- API keys → `~/.clawdbot/.env` as `*_API_KEY`
+- Service configs → `TOOLS.md` infrastructure section
+
 ### 🧠 MEMORY.md - Your Long-Term Memory
 - **ONLY load in main session** (direct chats with your human)
 - **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)

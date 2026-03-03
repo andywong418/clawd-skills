@@ -34,3 +34,18 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+## Saved Credentials
+
+Document any credentials/configs saved to `~/.clawdbot/.env` here so you don't forget:
+
+```markdown
+### Example
+- DATABASE_URL → saved to ~/.clawdbot/.env (PostgreSQL)
+- OPENAI_API_KEY → saved to ~/.clawdbot/.env
+```
+
+**⚠️ Before asking for credentials, check:**
+1. `~/.clawdbot/.env`
+2. This file (TOOLS.md)
+3. `memory/*.md`
