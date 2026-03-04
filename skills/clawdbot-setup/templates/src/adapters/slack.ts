@@ -301,6 +301,30 @@ export class SlackAdapter implements PlatformAdapter {
       text = text.replace(new RegExp(`<@${this.botUserId}>\\s*`, 'g'), '').trim();
     }
 
+    // Auto-read thread context when message is in a thread
+    const isInThread = event.thread_ts && event.thread_ts !== event.ts;
+    if (isInThread) {
+      try {
+        const replies = await client.conversations.replies({
+          channel: event.channel,
+          ts: event.thread_ts,
+          limit: 50,
+        });
+        if (replies.messages && replies.messages.length > 1) {
+          const threadMsgs = replies.messages
+            .filter((m: any) => m.ts !== event.ts)
+            .map((m: any) => {
+              const who = m.user === this.botUserId ? '(you)' : (m.user || 'bot');
+              return `[${who}]: ${m.text || '(attachment)'}`;
+            })
+            .join('\n');
+          text = `[Thread context — ${replies.messages.length - 1} prior messages]\n${threadMsgs}\n\n[Current message]\n${text}`;
+        }
+      } catch {
+        // Non-critical — proceed without thread context
+      }
+    }
+
     return {
       platform: 'slack',
       channelId: event.channel,
