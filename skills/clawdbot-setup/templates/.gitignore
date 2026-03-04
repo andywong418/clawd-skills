@@ -16,8 +16,7 @@
 downloads/
 output/
 clips/
-temp/
-tmp/
+temp*/
 
 # Python artifacts
 __pycache__/

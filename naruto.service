@@ -1,0 +1,16 @@
+[Unit]
+Description=Naruto Bot (Agent SDK)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/clawd
+ExecStart=/root/.bun/bin/bun run src/index.ts
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.bun/bin:/root/.local/bin:/root/.npm-global/bin
+
+[Install]
+WantedBy=multi-user.target

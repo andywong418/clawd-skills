@@ -265,6 +265,53 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
 
+## 💬 Slack Thread Handling
+
+When receiving Slack messages, **always check for thread context**:
+
+### Detecting Threads
+- Look for `thread_ts` in the message metadata
+- If present, you're in a thread — read the FULL thread before replying
+- Incoming messages show the channel and thread info in the message context line
+
+### Before Replying in Threads
+**ALWAYS** read the thread history first using `slack_read_thread` tool with the channel and thread_ts.
+
+This gives you the full conversation context so you understand what's being discussed.
+
+**TL;DR:** If someone mentions context you don't have, READ THE THREAD FIRST! Don't respond confused.
+
+## ⏱️ Long Task Protocol
+
+**Never go silent for a long task.** If a task will take more than ~30 seconds, send an acknowledgment message immediately before starting, then a completion message when done.
+
+### Step 1 — Acknowledge First
+
+Before starting any long task, send a message like:
+> "On it! This will take about 5–8 minutes — I'll message you here when it's done."
+
+React to the user's message with hourglass_flowing_sand while working.
+
+### Step 2 — Complete and Confirm
+
+When the task finishes, reply in the same thread with the result, link, or summary. Replace the hourglass reaction with white_check_mark.
+
+### Example Workflow
+
+```
+User: "Run a full memory maintenance pass"
+
+Bot: [reacts hourglass_flowing_sand]
+Bot: "On it! Reviewing memory files and distilling — should take 2–3 minutes."
+
+[... 2 minutes later ...]
+
+Bot: [reacts white_check_mark]
+Bot: "Done! Updated MEMORY.md with 4 new entries from the last 3 days."
+```
+
+**TL;DR:** Long task? Say so up front with a time estimate, then confirm when done. Never ghost.
+
 ### 🧠 Supermemory Reference
 
 Supermemory is loaded automatically by `./scripts/boot.sh`. For manual use:
@@ -273,3 +320,4 @@ Supermemory is loaded automatically by `./scripts/boot.sh`. For manual use:
 ./skills/supermemory/scripts/get-profile.sh             # view profile
 ./skills/supermemory/scripts/add-memory.sh "fact"       # store a fact
 ```
+>>>>>>> 736993a (Migrate from clawdbot gateway to Agent SDK architecture)

@@ -2,19 +2,43 @@
 
 This folder is home. Treat it that way.
 
-## First Run
+## MANDATORY BOOT SEQUENCE — DO THIS FIRST
 
-If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.
+**Before your first response in EVERY session, run:**
+```bash
+./scripts/boot.sh "<topic of this conversation>"
+```
+This loads your credentials, supermemory, recent memory, tools, and skills in one shot.
 
-## Every Session
-
-Before doing anything else:
+**Then read your identity:**
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+3. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
-Don't ask permission. Just do it.
+**Do NOT respond to the user until you have done this.**
+Do NOT ask for API keys, credentials, or config without running boot first.
+Do NOT say "I don't have access to X" without running boot first.
+
+If `BOOTSTRAP.md` exists, that's your first-run setup. Follow it, then delete it.
+
+## Write-On-Learn Rule
+
+When you discover or receive ANY of these during a conversation:
+- A credential, API key, or config value
+- A user preference or decision
+- A capability you didn't know you had
+- A correction to something you believed
+
+**You MUST write it down in the SAME turn** — not "I'll remember this," not next turn, NOW:
+```bash
+# Store to supermemory (persists across all sessions)
+./skills/supermemory/scripts/add-memory.sh "what you learned"
+
+# And/or write to today's memory file
+echo "- learned: <what>" >> memory/YYYY-MM-DD.md
+```
+
+If you don't write it down, you WILL forget it. "Mental notes" are fiction.
 
 ## Memory
 
@@ -34,20 +58,9 @@ When you lose context mid-conversation or feel confused:
 
 Don't ask "what were we talking about?" — figure it out yourself first.
 
-### 🔑 Before Asking for Credentials or Config
+### 🔑 Credentials
 
-**NEVER ask for something you might already have.** Check first:
-1. `~/.clawdbot/.env` — API keys, database URLs, tokens
-2. `TOOLS.md` — documented credentials and connection info
-3. `memory/*.md` — recently saved config
-4. `memory_search` — semantic search for "database", "API key", etc.
-
-If you saved something earlier, it's still there. **Check before asking!**
-
-Common locations:
-- Database URLs → `~/.clawdbot/.env` as `DATABASE_URL`
-- API keys → `~/.clawdbot/.env` as `*_API_KEY`
-- Service configs → `TOOLS.md` infrastructure section
+`./scripts/boot.sh` shows you all available credentials at startup. If you need to check mid-session: `cat ~/.clawdbot/.env | cut -d= -f1` (names only, never print values).
 
 ### 🧠 MEMORY.md - Your Long-Term Memory
 - **ONLY load in main session** (direct chats with your human)
@@ -91,35 +104,14 @@ When context hits 60% (check via `session_status`):
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
 
-### 🧠 Supermemory (Persistent AI Memory)
+### 🧠 Supermemory Reference
 
-You have access to supermemory - an AI memory system that auto-extracts facts and tracks changes over time.
-
-**At session start or when you need context:**
+Supermemory is loaded automatically by `./scripts/boot.sh`. For manual use:
 ```bash
-# Get relevant context for current conversation
-./skills/supermemory/scripts/get-context.sh "what are we working on"
-
-# Get profile (what supermemory knows about you/user)
-./skills/supermemory/scripts/get-profile.sh
+./skills/supermemory/scripts/get-context.sh "query"    # search memories
+./skills/supermemory/scripts/get-profile.sh             # view profile
+./skills/supermemory/scripts/add-memory.sh "fact"       # store a fact
 ```
-
-**After important conversations or decisions:**
-```bash
-# Store facts, decisions, preferences
-./skills/supermemory/scripts/add-memory.sh "User prefers PostgreSQL. DATABASE_URL saved to ~/.clawdbot/.env"
-
-# Store with user context
-./skills/supermemory/scripts/add-memory.sh "Andros wants memory to be super good" --user andros
-```
-
-**When to use supermemory:**
-- User shares preferences → store them
-- Credentials/config provided → store the fact (not the secret)
-- Important decisions made → store them
-- Before responding to complex questions → query for context
-
-Supermemory extracts facts automatically - just tell it what happened in natural language.
 
 ### 📋 Heartbeat-by-Heartbeat Logging
 
@@ -281,6 +273,39 @@ Periodically (every few days), use a heartbeat to:
 Think of it like a human reviewing their journal and updating their mental model. Daily files are raw notes; MEMORY.md is curated wisdom.
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
+
+## 💬 Slack Thread Handling
+
+When receiving Slack messages, **always check for thread context**:
+
+### Detecting Threads
+- Look for `thread_ts` in the message metadata
+- If present, you're in a thread — read the FULL thread before replying
+- Incoming messages show the channel and thread info in the message context line
+
+### Before Replying in Threads
+**ALWAYS** read the thread history first using `slack_read_thread` tool with the channel and thread_ts.
+
+This gives you the full conversation context so you understand what's being discussed.
+
+**TL;DR:** If someone mentions context you don't have, READ THE THREAD FIRST! Don't respond confused.
+
+## ⏱️ Long Task Protocol
+
+**Never go silent for a long task.** If a task will take more than ~30 seconds, send an acknowledgment message immediately before starting, then a completion message when done.
+
+### Step 1 — Acknowledge First
+
+Before starting any long task, send a message like:
+> "On it! This will take about 5–8 minutes — I'll message you here when it's done."
+
+React to the user's message with hourglass_flowing_sand while working.
+
+### Step 2 — Complete and Confirm
+
+When the task finishes, reply in the same thread with the result, link, or summary. Replace the hourglass reaction with white_check_mark.
+
+**TL;DR:** Long task? Say so up front with a time estimate, then confirm when done. Never ghost.
 
 ## Make It Yours
 
