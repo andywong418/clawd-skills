@@ -5,7 +5,7 @@ import { AgentSessionPool } from './agent-session-pool.js';
 const BOT_WORKSPACE = process.env.BOT_WORKSPACE || '/root/clawd';
 const DEFAULT_MODEL = process.env.BOT_MODEL || 'claude-sonnet-4-6';
 const MAX_TURNS = parseInt(process.env.BOT_MAX_TURNS || '25', 10);
-const MAX_BUDGET = parseFloat(process.env.BOT_MAX_BUDGET || '1.00');
+const MAX_BUDGET = parseFloat(process.env.BOT_MAX_BUDGET || '0');
 const MAX_SESSIONS = parseInt(process.env.BOT_MAX_SESSIONS || '3', 10);
 const SESSION_TTL_MS = parseInt(process.env.BOT_SESSION_TTL_MS || `${60 * 60 * 1000}`, 10);
 const WARM_POOL = parseInt(process.env.BOT_WARM_POOL || '1', 10);
