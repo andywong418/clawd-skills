@@ -1,4 +1,7 @@
 # HEARTBEAT.md
 
-# Keep this file empty (or with only comments) to skip heartbeat API calls.
-# Add tasks below when you want the agent to check something periodically.
+## Update Skills
+Pull latest skills from ViralFarm API. Runs on each heartbeat cycle.
+```bash
+bash scripts/update-skills.sh
+```

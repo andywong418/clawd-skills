@@ -89,6 +89,38 @@ cp SIAS/templates/SOUL.md ~/clawd/
 ```
 Source: https://github.com/iggyswelt/SIAS
 
+## Skills Distribution
+
+Bots pull skills from the ViralFarm API (private distribution). No git repos needed.
+
+### Setup on New Bot
+
+```bash
+# 1. Set env vars (add to ~/.clawdbot/.env)
+echo "VIRALFARM_API_URL=https://your-api-url" >> ~/.clawdbot/.env
+echo "VIRALFARM_API_KEY=vf_your_key_here" >> ~/.clawdbot/.env
+
+# 2. Copy update script
+cp scripts/update-skills.sh ~/clawd/scripts/update-skills.sh
+chmod +x ~/clawd/scripts/update-skills.sh
+
+# 3. Pull initial skills
+cd ~/clawd && bash scripts/update-skills.sh
+
+# 4. Add to HEARTBEAT.md for auto-updates
+cat >> ~/clawd/HEARTBEAT.md << 'EOF'
+
+## Update Skills
+Pull latest skills from ViralFarm API. Runs on each heartbeat cycle.
+```bash
+bash scripts/update-skills.sh
+```
+EOF
+```
+
+Skills are tier-gated: free workspaces get free skills, pro workspaces get everything.
+The heartbeat cron (every 30 min) runs HEARTBEAT.md which triggers `update-skills.sh`.
+
 ## Key Protocols Included
 
 ### ⚡ WAL Protocol (Write-Ahead Log)

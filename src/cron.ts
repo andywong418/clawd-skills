@@ -81,6 +81,19 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
 }
 
 function setupDefaultSchedules(): void {
+  // Heartbeat — every 30 minutes
+  const heartbeat = cron.schedule('*/30 * * * *', () => {
+    executeSchedule({
+      id: 'default-heartbeat',
+      name: 'Heartbeat',
+      cronExpression: '*/30 * * * *',
+      prompt: 'Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.',
+      enabled: true,
+    });
+  });
+  activeTasks.set('default-heartbeat', heartbeat);
+  console.log('[cron] Scheduled default heartbeat — every 30 minutes');
+
   // Memory maintenance — every 6 hours
   const memMaintenance = cron.schedule('0 */6 * * *', () => {
     executeSchedule({
