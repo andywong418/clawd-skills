@@ -25,7 +25,11 @@ function buildPrompt(msg: IncomingMessage): string {
 
   if (msg.attachments.length > 0) {
     const atts = msg.attachments
-      .map((a) => `${a.filename || a.type} — ${a.url}`)
+      .map((a) => {
+        const loc = (a as any).localPath || a.url;
+        const label = a.filename || a.type;
+        return `${label} — saved at ${loc} (use Read tool to view)`;
+      })
       .join(', ');
     lines.push(`Attachments: [${atts}]`);
   }

@@ -1,5 +1,7 @@
 import { App, type SlackEventMiddlewareArgs, type AllMiddlewareArgs } from '@slack/bolt';
 import type { IncomingMessage, OutgoingMessage, PlatformAdapter, MessageHandler } from './types.js';
+import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 const MAX_CONCURRENT = 3;
 const STREAM_DEBOUNCE_MS = 3000;
@@ -386,20 +388,48 @@ export class SlackAdapter implements PlatformAdapter {
   private async processAttachments(files: any[] | undefined, client: any) {
     if (!files?.length) return [];
 
-    return files.map((file: any) => {
+    const tmpDir = '/tmp/slack-files';
+    try { mkdirSync(tmpDir, { recursive: true }); } catch {}
+
+    const token = process.env.SLACK_BOT_TOKEN;
+    const results = [];
+
+    for (const file of files) {
       const typeMap: Record<string, 'image' | 'video' | 'file'> = {
         image: 'image',
         video: 'video',
       };
       const mainType = file.mimetype?.split('/')[0];
+      const type = typeMap[mainType] || 'file';
 
-      return {
-        type: typeMap[mainType] || 'file',
-        url: file.url_private,
+      let localPath: string | undefined;
+      try {
+        if (file.url_private && token) {
+          const res = await fetch(file.url_private, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(15000),
+          });
+          if (res.ok) {
+            const buf = Buffer.from(await res.arrayBuffer());
+            const safeName = (file.name || `file_${Date.now()}`).replace(/[^a-zA-Z0-9._-]/g, '_');
+            localPath = join(tmpDir, safeName);
+            writeFileSync(localPath, buf);
+          }
+        }
+      } catch (err) {
+        console.error('[slack] Failed to download attachment:', err);
+      }
+
+      results.push({
+        type,
+        url: localPath || file.url_private,
         filename: file.name,
         mimeType: file.mimetype,
-      };
-    });
+        localPath,
+      });
+    }
+
+    return results;
   }
 
   async start(): Promise<void> {

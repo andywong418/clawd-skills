@@ -59,6 +59,21 @@ You have skills in the `skills/` directory. Each has a `SKILL.md` that explains 
 2. Execute scripts via `Bash` tool (e.g., `bash skills/<name>/scripts/run.sh ...`)
 3. Read output and format response
 
+## Video & Content Tasks (Seedance API)
+
+When generating videos, editing content, or running production tasks, **always log them to the Seedance API** so they are trackable in the web dashboard.
+
+**Use the seedance-api skill** (read skills/seedance-api/SKILL.md for full docs). Quick reference:
+
+1. **Create a session** at the start of the task using the api.sh script (see SKILL.md for args)
+2. **Log events** as you work (messages, generation_started, generation_completed, generation_failed)
+3. **Share the web link** - the create-session response includes a webUrl field. Post it in Slack so the user can track progress and continue from the web dashboard
+4. When the user asks for a **link to view or edit** a video/session, give them the webUrl
+
+**Types:** video_creation, edit, research, meme_remix, ugc_creation, general
+
+**Do NOT use this for:** casual conversation, general questions, non-production tasks.
+
 ## Credentials
 
 **ALWAYS check these locations before asking for credentials:**
