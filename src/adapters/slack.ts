@@ -51,8 +51,8 @@ export class SlackAdapter implements PlatformAdapter {
     this.app.event('message', async ({ event, say, client }) => {
       const msg = event as any;
 
-      // Skip bot messages, message_changed, etc.
-      if (msg.subtype) return;
+      // Skip bot messages, message_changed, etc. but allow file_share
+      if (msg.subtype && msg.subtype !== 'file_share') return;
       // Skip messages from this bot
       if (msg.bot_id || msg.user === this.botUserId) return;
 
