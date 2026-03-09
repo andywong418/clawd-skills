@@ -117,6 +117,8 @@ export class SlackAdapter implements PlatformAdapter {
 
     // Keep "thinking..." alive during tool-use phases with no text deltas
     let thinkingInterval: ReturnType<typeof setInterval> | undefined;
+    let stuckTimer: ReturnType<typeof setTimeout> | undefined;
+    let stuckNotified = false;
     let thinkingDots = 0;
     const thinkingFrames = ['_thinking._', '_thinking.._', '_thinking..._'];
 
@@ -130,6 +132,20 @@ export class SlackAdapter implements PlatformAdapter {
         });
         thinkingTs = thinkingMsg.ts;
         console.log(`[slack] Posted thinking message: ${thinkingTs}`);
+
+          // Notify user if we've been thinking too long (might be stuck)
+          const STUCK_THRESHOLD_MS = parseInt(process.env.BOT_STUCK_THRESHOLD_MS || '300000', 10);
+          stuckTimer = setTimeout(async () => {
+            if (stuckNotified) return;
+            stuckNotified = true;
+            try {
+              await client.chat.postMessage({
+                channel: event.channel,
+                thread_ts: threadTs,
+                text: "⏳ This is taking longer than expected — I might be stuck. If I don't respond soon, try re-sending your message to start fresh.",
+              });
+            } catch { /* non-critical */ }
+          }, STUCK_THRESHOLD_MS);
 
         // Animate thinking indicator until first stream chunk
         thinkingInterval = setInterval(async () => {
@@ -229,6 +245,7 @@ export class SlackAdapter implements PlatformAdapter {
       isStreaming = false;
       if (streamTimer) clearTimeout(streamTimer);
       if (thinkingInterval) clearInterval(thinkingInterval);
+      if (stuckTimer) { clearTimeout(stuckTimer); stuckNotified = true; }
       console.log(`[slack] Handler returned: ${response ? response.slice(0, 80) : '(empty)'}`);
 
       if (response) {
@@ -293,6 +310,7 @@ export class SlackAdapter implements PlatformAdapter {
       isStreaming = false;
       if (streamTimer) clearTimeout(streamTimer);
       if (thinkingInterval) clearInterval(thinkingInterval);
+      if (stuckTimer) { clearTimeout(stuckTimer); stuckNotified = true; }
       console.error('[slack] Error processing message:', err);
 
       // Update thinking message with error
