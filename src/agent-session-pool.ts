@@ -1,4 +1,6 @@
 import { query, type SDKUserMessage, type SDKMessage, type SDKResultMessage, type SettingSource } from '@anthropic-ai/claude-agent-sdk';
+import { appendFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 import type { StreamCallback, ToolProgressCallback } from './adapters/types.js';
 
 type AgentSessionOptions = {
@@ -66,6 +68,13 @@ class AgentSession {
   private closed = false;
   private query: ReturnType<typeof query>;
 
+  // Memory tracking
+  private turnCount = 0;
+  private totalCost = 0;
+  private querySnippets: string[] = [];
+  private resultSnippets: string[] = [];
+  private startedAt = Date.now();
+
   assignedKey: string | null = null;
   lastUsed = Date.now();
   busy = false;
@@ -116,6 +125,9 @@ class AgentSession {
         this.currentReject = reject;
       });
 
+      // Track query for memory capture
+      this.querySnippets.push(promptText.slice(0, 120));
+
       const userMessage: SDKUserMessage = {
         type: 'user',
         message: {
@@ -145,6 +157,10 @@ class AgentSession {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    // Capture memory before destroying the session
+    if (this.turnCount > 0 && this.assignedKey) {
+      this.captureSessionMemory();
+    }
     try {
       this.input.close();
       this.query.close();
@@ -152,6 +168,31 @@ class AgentSession {
       // ignore
     }
     this.onClosed(this);
+  }
+
+  private captureSessionMemory(): void {
+    try {
+      const duration = Math.round((Date.now() - this.startedAt) / 1000);
+      const mins = Math.floor(duration / 60);
+      const secs = duration % 60;
+      const entry = [
+        '',
+        `### Session ${this.id} (${this.assignedKey})`,
+        `- Time: ${new Date().toISOString()} (duration: ${mins}m${secs}s)`,
+        `- Turns: ${this.turnCount}, Cost: $${this.totalCost.toFixed(4)}`,
+        `- Queries: ${this.querySnippets.join(' → ')}`,
+        `- Last result: ${this.resultSnippets[this.resultSnippets.length - 1] || 'none'}`,
+        '',
+      ].join('\n');
+
+      const today = new Date().toISOString().split('T')[0];
+      const dailyFile = join(this.options.cwd, 'memory', `${today}.md`);
+      mkdirSync(dirname(dailyFile), { recursive: true });
+      appendFileSync(dailyFile, entry);
+      console.log(`[memory] Captured session ${this.id} → memory/${today}.md`);
+    } catch (e) {
+      console.error(`[memory] Failed to capture session ${this.id}:`, e);
+    }
   }
 
   private failCurrent(err: Error): void {
@@ -193,7 +234,13 @@ class AgentSession {
   }
 
   private handleResult(message: SDKResultMessage): void {
+    const cost = (message as any).total_cost_usd;
+    const turns = (message as any).num_turns;
+    this.turnCount += turns || 0;
+    this.totalCost += cost || 0;
+
     if (message.subtype === 'success') {
+      this.resultSnippets.push((message.result || '').slice(0, 200));
       this.resolveCurrent(message.result || '');
       return;
     }

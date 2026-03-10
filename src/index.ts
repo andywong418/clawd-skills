@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { existsSync } from 'fs';
 import { SlackAdapter } from './adapters/slack.js';
-import { handleMessage, warmAgentPool } from './agent.js';
+import { handleMessage, warmAgentPool, closeAllPools } from './agent.js';
 import { startCron, stopCron } from './cron.js';
 
 // Load env from multiple sources (later files override earlier)
@@ -44,6 +44,7 @@ async function main() {
   const shutdown = async () => {
     console.log('\n[bot] Shutting down...');
     stopCron();
+    closeAllPools(); // Flush session memory before exit
     await slack.stop();
     process.exit(0);
   };

@@ -96,6 +96,11 @@ export function warmAgentPool(): void {
   getDefaultPool();
 }
 
+export function closeAllPools(): void {
+  defaultPool?.closeAll();
+  opusPool?.closeAll();
+}
+
 export async function handleMessage(msg: IncomingMessage, onStream?: StreamCallback, onToolProgress?: ToolProgressCallback): Promise<string> {
   const session = await lookupSession(msg);
   if (session) {

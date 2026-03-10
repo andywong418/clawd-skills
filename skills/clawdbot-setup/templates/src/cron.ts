@@ -81,18 +81,21 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
 }
 
 function setupDefaultSchedules(): void {
-  // Memory maintenance — every 6 hours
+  // Memory distillation — every 6 hours
+  // Auto-captured session logs in memory/YYYY-MM-DD.md get distilled into MEMORY.md
   const memMaintenance = cron.schedule('0 */6 * * *', () => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     executeSchedule({
       id: 'default-memory-maintenance',
-      name: 'Memory Maintenance',
+      name: 'Memory Distill',
       cronExpression: '0 */6 * * *',
-      prompt: 'Review recent memory files in memory/. Distill important events and lessons into MEMORY.md. Clean up stale entries.',
+      prompt: `Review memory/${today}.md and memory/${yesterday}.md (the auto-captured session logs). Distill any important lessons, decisions, patterns, or context into MEMORY.md. Remove duplicates and stale entries. Keep MEMORY.md under 150 lines. This is internal housekeeping — do not post to Slack.`,
       enabled: true,
     });
   });
   activeTasks.set('default-memory-maintenance', memMaintenance);
-  console.log('[cron] Scheduled default memory-maintenance — every 6 hours');
+  console.log('[cron] Scheduled default memory-distill — every 6 hours');
 }
 
 export async function startCron(): Promise<void> {
