@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "command": "bash -c 'echo \"$(date -Iseconds) Compaction starting (trigger: $HOOK_TRIGGER)\" >> /root/clawd/memory/compaction.log && cat /root/clawd/memory/SESSION-STATE.md 2>/dev/null | head -50 >> /root/clawd/memory/compaction.log'"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "command": "bash -c 'mkdir -p /root/clawd/memory && echo \"# Session State $(date -Iseconds)\n\n## Active Context\n\n_Write critical context here during conversation._\n\" > /root/clawd/memory/SESSION-STATE.md'"
+      }
+    ]
+  }
+}

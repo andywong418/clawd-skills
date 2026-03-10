@@ -198,10 +198,18 @@ class AgentSession {
       return;
     }
     if (message.subtype === 'error_max_turns') {
-      const text = (message as any).result || 'I ran out of steps processing that. Could you try a simpler ask, or break it into smaller parts?';
+      console.log(`[agent:session] Hit max turns limit in session ${this.id}`);
+      const text = (message as any).result || 'I ran out of steps (hit the turn limit). Could you try a simpler ask, or break it into smaller parts?';
       this.resolveCurrent(text);
       return;
     }
+    if (message.subtype === 'error_max_budget_usd') {
+      console.log(`[agent:session] Hit budget limit in session ${this.id}`);
+      this.resolveCurrent('I hit the spending limit for this session. Let me know if you want me to continue.');
+      return;
+    }
+    // Log other error types
+    console.log(`[agent:session] Result with subtype: ${message.subtype}`);
     this.resolveCurrent('Something went wrong — try again?');
   }
 
@@ -210,6 +218,21 @@ class AgentSession {
       if (message.type === 'system' && (message as any).subtype === 'init') {
         const sid = (message as any).session_id;
         if (sid) this.sessionId = sid;
+        continue;
+      }
+      // Detect compaction events
+      if (message.type === 'system' && (message as any).subtype === 'compact_boundary') {
+        const meta = (message as any).compact_metadata;
+        console.log(`[agent:session] Context compaction triggered (trigger: ${meta?.trigger}, pre_tokens: ${meta?.pre_tokens})`);
+        // TODO: Could save session state here before compaction completes
+        continue;
+      }
+      // Detect status changes (compacting, etc.)
+      if (message.type === 'system' && (message as any).subtype === 'status') {
+        const status = (message as any).status;
+        if (status === 'compacting') {
+          console.log(`[agent:session] Session ${this.id} is compacting context...`);
+        }
         continue;
       }
       if (message.type === 'stream_event') {
@@ -263,6 +286,15 @@ export class AgentSessionPool {
   async run(key: string, promptText: string, onStream?: StreamCallback, onToolProgress?: ToolProgressCallback): Promise<string> {
     const session = await this.getSession(key);
     return session.run(promptText, onStream, onToolProgress);
+  }
+
+  forceCloseSession(key: string): void {
+    const session = this.sessionsByKey.get(key);
+    if (session) {
+      console.log(`[agent:pool] Force-closing stuck session for key: ${key}`);
+      this.sessionsByKey.delete(key);
+      session.close();
+    }
   }
 
   closeAll(): void {

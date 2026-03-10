@@ -1,0 +1,204 @@
+{
+  "formats": [
+    {
+      "id": "what-did-you-expect",
+      "name": "What Did You Expect",
+      "description": "Mundane situation with absurdly high-stakes hypothetical caption",
+      "structure": {
+        "visual": "Clip/image showing obvious or mundane outcome",
+        "text": "\"What did you expect, a [X]?\"",
+        "timing": "Caption appears after/during the mundane moment"
+      },
+      "remix_points": {
+        "visual": "Any clip with predictable/mundane outcome",
+        "X_variable": "Something wildly disproportionate (nuclear deal, Michelin star, peace treaty)",
+        "face": "Optional - can swap subject"
+      },
+      "examples": [
+        "https://twitter.com/PweaseToken (original reference)"
+      ],
+      "humor_mechanic": "Gap between trivial reality and dramatic hypothetical",
+      "tags": [
+        "caption",
+        "reaction"
+      ],
+      "updated_at": "2026-03-01T19:22:18.546613+00:00"
+    },
+    {
+      "id": "ai-upgrade",
+      "name": "AI Upgrade/Glow Up",
+      "description": "Before/after showing AI-enhanced version",
+      "structure": {
+        "visual": "Split or transition from original to AI-enhanced",
+        "text": "Usually minimal, let visuals speak",
+        "timing": "Quick cut or morph transition"
+      },
+      "remix_points": {
+        "source_image": "Any photo/video to enhance",
+        "ai_tool": "Seedance, Kling, Pika for generation",
+        "style": "Ghibli, realistic, fantasy, etc."
+      },
+      "examples": []
+    },
+    {
+      "id": "talking-object",
+      "name": "Talking Object/If I Could Speak",
+      "description": "Inanimate object or body part 'speaking' about its condition",
+      "structure": {
+        "visual": "Animated/lip-synced object with speech bubble or VO",
+        "text": "First-person narration from object's POV",
+        "timing": "Educational but entertaining pacing"
+      },
+      "remix_points": {
+        "object": "Body part, appliance, pet, anything",
+        "message": "What it would say about how it's treated",
+        "animation_style": "Cartoon, AI-animated, simple overlay"
+      },
+      "examples": [
+        "https://www.instagram.com/if.icouldspeak/"
+      ]
+    },
+    {
+      "id": "unexpected-reveal",
+      "name": "Unexpected Reveal/Plot Twist",
+      "description": "Setup looks like one thing, reveals something unexpected",
+      "structure": {
+        "visual": "Normal scene \u2192 sudden twist/reveal",
+        "text": "Often uses suspenseful caption then punchline",
+        "timing": "Build tension, quick payoff"
+      },
+      "remix_points": {
+        "setup": "Establish expectation",
+        "reveal": "Subvert with face swap, text, or visual trick",
+        "face": "Key target for swaps"
+      },
+      "examples": []
+    },
+    {
+      "id": "reaction-format",
+      "name": "Reaction Clip",
+      "description": "Known reaction clip applied to new context",
+      "structure": {
+        "visual": "Context setup \u2192 reaction clip",
+        "text": "Caption provides the 'stimulus' context",
+        "timing": "Setup text visible, then reaction plays"
+      },
+      "remix_points": {
+        "context_text": "What triggers the reaction",
+        "reaction_clip": "Can swap in different reactions",
+        "face": "Can face-swap the reactor"
+      },
+      "examples": []
+    },
+    {
+      "id": "side-by-side-comparison",
+      "name": "Side by Side / Expectation vs Reality",
+      "description": "Two panels showing contrast",
+      "structure": {
+        "visual": "Split screen or sequential comparison",
+        "text": "Labels for each side",
+        "timing": "Can be simultaneous or reveal second"
+      },
+      "remix_points": {
+        "left_panel": "Expectation/before/them",
+        "right_panel": "Reality/after/me",
+        "faces": "Both sides can be swapped"
+      },
+      "examples": []
+    },
+    {
+      "id": "pov-format",
+      "name": "POV (Point of View)",
+      "description": "Camera represents viewer experiencing scenario",
+      "structure": {
+        "visual": "First-person perspective or actor looking at camera",
+        "text": "POV: [scenario description]",
+        "timing": "Text sets up, video delivers the experience"
+      },
+      "remix_points": {
+        "scenario": "The POV situation",
+        "actor": "Person reacting to 'you' (face swappable)",
+        "setting": "Background/context"
+      },
+      "examples": []
+    },
+    {
+      "id": "sped-up-tutorial",
+      "name": "Sped Up Tutorial/Lifehack",
+      "description": "Quick how-to with fast cuts and upbeat music",
+      "structure": {
+        "visual": "Step-by-step demonstration, often 2-4x speed",
+        "text": "Step numbers or key tips overlaid",
+        "timing": "30-60 seconds max, no dead time"
+      },
+      "remix_points": {
+        "topic": "What's being demonstrated",
+        "presenter": "Can face-swap the hands/person",
+        "music": "Upbeat, trending audio"
+      },
+      "examples": [
+        "https://www.instagram.com/lifehack/"
+      ]
+    },
+    {
+      "id": "ghibli-transform",
+      "name": "Ghibli Transform",
+      "description": "AI transforms photo/video into Studio Ghibli animation style",
+      "structure": {
+        "visual": "Before/after or morphing transition to Ghibli art style",
+        "text": "Minimal - visuals speak for themselves",
+        "timing": "Quick reveal or smooth morph transition"
+      },
+      "remix_points": {
+        "face": "Can swap faces",
+        "text": "Can change text/caption",
+        "context": "Can change scenario"
+      },
+      "examples": [],
+      "source_url": null,
+      "tags": [
+        "ai-transform",
+        "style-transfer",
+        "trending"
+      ],
+      "humor_mechanic": "Nostalgia meets AI magic - seeing yourself or scenes as anime",
+      "created_at": "2026-03-01T19:22:29.079517+00:00",
+      "updated_at": "2026-03-01T19:22:29.079544+00:00",
+      "use_count": 0,
+      "viral_score": 0
+    },
+    {
+      "id": "if-i-could-speak",
+      "name": "If I Could Speak",
+      "description": "Inanimate object or body part speaks about its condition/treatment",
+      "structure": {
+        "visual": "Animated object with speech/lip-sync or speech bubbles",
+        "text": "First-person narration from object POV",
+        "timing": "Educational pacing, 30-60 seconds"
+      },
+      "remix_points": {
+        "face": "Can swap faces",
+        "text": "Can change text/caption",
+        "context": "Can change scenario"
+      },
+      "examples": [
+        "https://www.instagram.com/if.icouldspeak/"
+      ],
+      "source_url": null,
+      "tags": [
+        "educational",
+        "animation",
+        "health"
+      ],
+      "humor_mechanic": "Anthropomorphizing things to deliver info in entertaining way",
+      "created_at": "2026-03-01T19:22:29.185375+00:00",
+      "updated_at": "2026-03-01T19:22:29.185403+00:00",
+      "use_count": 0,
+      "viral_score": 0
+    }
+  ],
+  "metadata": {
+    "last_updated": "2026-03-01T19:22:29.185452+00:00",
+    "version": "1.0"
+  }
+}

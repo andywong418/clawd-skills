@@ -1,10 +1,7 @@
 import { config } from 'dotenv';
 import { existsSync } from 'fs';
-import { SlackAdapter } from './adapters/slack.js';
-import { handleMessage, warmAgentPool } from './agent.js';
-import { startCron, stopCron } from './cron.js';
 
-// Load env from multiple sources (later files override earlier)
+// Load env FIRST, before any other imports that might read process.env
 const envPaths = [
   `${process.env.HOME}/.clawdbot/.env`,  // Server-level keys (existing clawdbot setup)
   '.env',                                  // Local override (optional)
@@ -15,6 +12,11 @@ for (const p of envPaths) {
     console.log(`[env] Loaded ${p}`);
   }
 }
+
+// Now import modules that depend on env vars
+import { SlackAdapter } from './adapters/slack.js';
+import { handleMessage, warmAgentPool } from './agent.js';
+import { startCron, stopCron } from './cron.js';
 
 async function main() {
   console.log('Naruto starting...');
