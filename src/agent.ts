@@ -1,6 +1,8 @@
 import type { IncomingMessage, StreamCallback, ToolProgressCallback } from './adapters/types.js';
 import { lookupSession, logSessionEvent } from './sessions.js';
 import { AgentSessionPool } from './agent-session-pool.js';
+import { existsSync, readFileSync, statSync } from 'fs';
+import { join } from 'path';
 
 // Config getters - read at runtime to ensure env is loaded
 const getConfig = () => ({
@@ -18,7 +20,7 @@ const ALLOWED_TOOLS = ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'WebSear
 let defaultPool: AgentSessionPool | null = null;
 let opusPool: AgentSessionPool | null = null;
 
-function buildPrompt(msg: IncomingMessage): string {
+function buildPrompt(msg: IncomingMessage, sessionState?: string | null): string {
   const lines = [
     `Platform: ${msg.platform}`,
     `Channel: ${msg.channelName ? `#${msg.channelName} (${msg.channelId})` : msg.channelId}`,
@@ -38,6 +40,10 @@ function buildPrompt(msg: IncomingMessage): string {
     lines.push(`Attachments: [${atts}]`);
   }
 
+  if (sessionState) {
+    lines.push('', '--- Session State (from memory/SESSION-STATE.md) ---', sessionState, '--- End Session State ---');
+  }
+
   lines.push('', `Message: ${msg.text}`);
   return lines.join('\n');
 }
@@ -48,6 +54,20 @@ function loadEnvVars(): Record<string, string> {
     if (val) env[key] = val;
   }
   return env;
+}
+
+function loadSessionState(workspace: string): string | null {
+  const statePath = join(workspace, 'memory', 'SESSION-STATE.md');
+  try {
+    if (!existsSync(statePath)) return null;
+    const stat = statSync(statePath);
+    const ageMs = Date.now() - stat.mtimeMs;
+    if (ageMs > 2 * 60 * 60 * 1000) return null; // ignore if > 2 hours old
+    const content = readFileSync(statePath, 'utf8').trim();
+    return content || null;
+  } catch {
+    return null;
+  }
 }
 
 function threadKey(msg: IncomingMessage): string {
@@ -115,7 +135,9 @@ export async function handleMessage(msg: IncomingMessage, onStream?: StreamCallb
     });
   }
 
-  const prompt = buildPrompt(msg);
+  const cfg = getConfig();
+  const sessionState = loadSessionState(cfg.workspace);
+  const prompt = buildPrompt(msg, sessionState);
   console.log(`[agent] Starting query for ${msg.userName}: ${msg.text.slice(0, 60)}`);
 
   let result = '';
