@@ -2,6 +2,8 @@ import { query, type SDKUserMessage, type SDKMessage, type SDKResultMessage, typ
 import { appendFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import type { StreamCallback, ToolProgressCallback } from './adapters/types.js';
+import { appendFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 
 type AgentSessionOptions = {
   model: string;
@@ -271,7 +273,16 @@ class AgentSession {
       if (message.type === 'system' && (message as any).subtype === 'compact_boundary') {
         const meta = (message as any).compact_metadata;
         console.log(`[agent:session] Context compaction triggered (trigger: ${meta?.trigger}, pre_tokens: ${meta?.pre_tokens})`);
-        // TODO: Could save session state here before compaction completes
+        // Save compaction notice to SESSION-STATE.md so context loss is detectable
+        try {
+          const stateFile = join(this.options.cwd, 'memory', 'SESSION-STATE.md');
+          mkdirSync(dirname(stateFile), { recursive: true });
+          const timestamp = new Date().toISOString();
+          const notice = `\n---\n[COMPACTION - ${timestamp}]\nContext auto-compacted in session ${this.id} (key: ${this.assignedKey ?? 'unassigned'})\nPre-compaction tokens: ${meta?.pre_tokens ?? 'unknown'}. Trigger: ${meta?.trigger ?? 'unknown'}.\nRe-read memory/MEMORY.md and today's daily notes if context is unclear.\n`;
+          appendFileSync(stateFile, notice);
+        } catch (e) {
+          console.error('[agent:session] Failed to write SESSION-STATE.md compaction notice:', e);
+        }
         continue;
       }
       // Detect status changes (compacting, etc.)

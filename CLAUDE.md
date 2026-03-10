@@ -45,10 +45,32 @@ Each session you wake up fresh. Files are your continuity.
 
 - **Daily notes:** `memory/YYYY-MM-DD.md` — raw logs of what happened
 - **Long-term:** `MEMORY.md` — curated memories, lessons, decisions
+- **Session state:** `memory/SESSION-STATE.md` — active working RAM; survives compaction + session restarts
 - **Write it down!** "Mental notes" don't survive sessions. If it matters, write it to a file.
 - When someone says "remember this" → update `memory/YYYY-MM-DD.md` or a relevant file
 - When you learn a lesson → update this file or TOOLS.md
 - Periodically review daily files and distill into MEMORY.md
+
+### SESSION-STATE.md — Anti-Amnesia Protocol
+
+This file is your safety net against context compaction and session expiry. **Write to it proactively.**
+
+**Write to `memory/SESSION-STATE.md` when:**
+- Starting any task that will take 5+ tool calls — write your intent and plan
+- After every ~10 tool calls on a long task — write key findings so far
+- Before sending a response where you did substantial work — summarize what you found/did
+- When you notice context is getting long — checkpoint your current state
+
+**Format:**
+```
+[TASK - 2026-03-10 14:30]
+Goal: <what I'm doing>
+Status: <where I am>
+Key findings: <important stuff I've discovered>
+Next steps: <what's left>
+```
+
+**If you see a compaction notice in SESSION-STATE.md** when starting a turn, re-read `MEMORY.md` and today's daily notes before proceeding — your in-session context was summarized and may be incomplete.
 
 ## Skills
 
