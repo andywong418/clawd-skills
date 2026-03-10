@@ -1,4 +1,6 @@
 
+<!-- Last distilled: 2026-03-10 (scheduled maintenance) from daily files 2026-02-28 through 2026-03-03 + git commits through 811c9bb + 4 missing skills added to catalog -->
+
 ## Context Recovery
 When losing context:
 1. Check the current message thread
@@ -17,6 +19,10 @@ Migrated from clawdbot gateway → **Bun + Claude Agent SDK** (commit `3a764fb`,
 - Cron via `schedules.json`, defaults to memory maintenance
 - Config via `CLAUDE.md` as primary (settingSources: `['project']`)
 - **Auto-reads thread context** when bot is tagged in a thread (commit `7b8631b`)
+- **No budget limits** on any bot — removed from all bots and templates (commit `b5f1521`)
+- **Stuck timer** — posts user warning after `BOT_STUCK_THRESHOLD_MS` (default 5min) if still thinking; clears on completion/error (commit `src/adapters/slack.ts`)
+- **Force-close on hard timeout** — `cancelAgentSession(key)` / `pool.forceCloseSession(key)` added in `src/agent.ts` + `src/agent-session-pool.ts` (uncommitted); extends stuck handling beyond warning to actually killing the session
+- **file_share subtype** allowed through message handler (commit `34ac26e`)
 
 clawdbot-setup templates also updated to use Agent SDK pattern.
 
@@ -50,24 +56,78 @@ All 3 bots have:
 
 ## Git Setup
 - Workspace: `~/clawd`
-- Remote: `git@github.com:andywong418/clawd-skills.git`
+- Remote: `git@github.com:andywong418/clawd-skills.git` (personal skill workspace)
+- Shared public skills pulled from: `https://github.com/wondrous-dev/clawd-skills`
 - Git identity: `clawdbot@wonderverse.xyz`
 
 ## Runtime
 
 - **Bun** is the package manager/runtime (bun.lock in project root)
 
-## Skills Created
+## Skills
 
+Skills auto-update via heartbeat cron from `https://github.com/wondrous-dev/clawd-skills` (symlinked into `skills/`). Full manifest at `skills/.manifest.json`. Update script: `bash /root/clawd/scripts/update-skills.sh`.
+
+**Infra / Setup:**
 - **cloud-browser** — spin up DigitalOcean droplets with persistent browsers
-  - Chrome ignores `--remote-debugging-address=0.0.0.0` in newer versions — use socat proxy on :9223 → localhost:9222
+  - Chrome ignores `--remote-debugging-address=0.0.0.0` — use socat proxy on :9223 → localhost:9222
 - **clawdbot-setup** — templates for new Clawdbot instances (SOUL.md, AGENTS.md, BOOTSTRAP.md, USER.md, TOOLS.md, IDENTITY.md, HEARTBEAT.md)
-  - Recommended skills to install on new instances: OpenCortex (memory), SIAS (WAL protocol), memU (proactive), Vigil (safety guardrails)
+  - Recommended skills for new instances:
+    - **OpenCortex** (`JD2005L/opencortex`) — memory architecture, nightly distillation, encrypted vault
+    - **SIAS** (`iggyswelt/SIAS`) — WAL protocol, .learnings/ folder, promotion system
+    - **memU** (`NevaMind-AI/memU`) — memory-as-filesystem, intention capture, 24/7 agents
+    - **Vigil** (`hexitlabs/vigil`) — <2ms guardrails, blocks destructive commands/exfiltration/SSRF
 - **supermemory** — scripts: get-context.sh, add-memory.sh, get-profile.sh
+- **sessions** — persistent workflow tracking via Sessions API; log pipeline events and recover state
+- **slack** — control Slack from bot (react, pin, etc.)
 - **seedance-api** — log video/content production tasks for tracking in web dashboard
   - `SEEDANCE_API_URL` + `SEEDANCE_WORKSPACE_ID` in ~/.clawdbot/.env
   - Flow: create-session → get webUrl → log events → share webUrl in Slack
   - Types: video_creation, edit, research, meme_remix, ugc_creation, general
+
+**Content / Captions / Branding:**
+- **brand-trainer** — train/manage brand voice via ViralFarm API; requires `VIRALFARM_API_URL`, `VIRALFARM_API_KEY`
+- **caption-writer** — platform-optimized captions (IG, TikTok, Twitter, YouTube) via Claude
+- **a-b-hook-tester** — generate 3 hook variants, track winners over time
+- **business-profiler** — analyze a business website → structured content strategy
+- **aeo** — Answer Engine Optimization; get viralfarmbot cited by Claude/ChatGPT/Perplexity
+- **viral-templates** — proven viral video templates with AI generation prompts
+- **outlandish-ai** — absurdist/unhinged viral video concepts
+- **appstore-spy** — track competitor apps on the App Store; monitor rankings, subtitles, ratings, review velocity; spot rising competitors early
+- **influencer-cpm-tracker** — track influencer deal CPMs, flag anything over $1K CPM, maintain deal DB; auto-flags overpays, weekly spend reports
+
+**Video Production Pipeline:**
+- **produce** — end-to-end pipeline: topic → script → voiceover → b-roll → assembled video → posted
+- **video-director** — text concept → shot list → Kling clips → assembled video + caption
+- **video-gen** — generate via ViralFarm API (Kling, Runway, Sora, Seedance, MagicHour); preferred over fal-video (credit tracking)
+- **fal-video** — generate via fal.ai directly (Kling); requires `FAL_API_KEY`
+- **voiceover** — TTS audio via fal.ai: Kokoro (fast, 50+ voices) or MiniMax Speech-02 HD (quality)
+- **b-roll-finder** — find/download royalty-free b-roll from Pexels; requires `PEXELS_API_KEY`
+- **video-assembler** — stitch clips + audio (voiceover + music) into final MP4 via ffmpeg
+- **video-editor** — ffmpeg editing: concat, audio mix, fade, text overlays, crop
+- **subtitle-burner** — transcribe + burn TikTok-style captions via fal.ai Whisper + ffmpeg
+- **cross-poster** — reformat video for TikTok/IG Reels/YouTube Shorts in one shot
+- **thumbnail-generator** — generate A/B thumbnail variants with text overlays
+- **thumbnail-analyzer** — score thumbnails for CTR via Claude vision
+- **ugc-creator** — AI UGC creator images (Google Imagen) + animated with Kling
+- **google-imagen** — generate images via Google Imagen/Gemini; requires `GOOGLE_AI_API_KEY`
+- **meme-remix** — (see skill for docs)
+- **clipper** — download videos, transcribe, detect viral moments, cut clips with subtitles
+
+**TikTok / Account Growth:**
+- **warmup-trainer** — account warmup: scheduled engagement sessions, 3-phase progression
+- **comment-responder** — auto-reply to TikTok comments via Claude; shares storage with warmup-trainer
+- **follow-manager** — strategic follow/unfollow automation (commenters, hashtag engagers, target followers)
+- **daily-grind** — full daily TikTok engagement loop: warmup → replies → follow → unfollow
+- **tiktok-downloader** — download TikTok videos without watermark; enables repurposing pipeline
+- **post-scheduler** — queue and schedule posts to TikTok/IG/YouTube at optimal times
+- **performance-tracker** — pull analytics from TikTok/IG/Twitter/YouTube → Claude analysis
+- **twitter** — fetch tweets/user info via X API; requires Twitter API credentials
+- **viral-hunt** — (see skill for docs)
+- **ugc-tracker** — track UGC creator performance; manage roster, monitor views, calculate base pay + performance bonuses ($15/video + 100K/250K/500K/1M tiers)
+- **viral-format-cloner** — watch posted content for viral hits (100K+ IG / 500K+ TikTok), auto-generate 3 hook variations to multiply viral content
+
+**Key API Credentials for Skills:** `FAL_API_KEY`, `PEXELS_API_KEY`, `GOOGLE_AI_API_KEY`, `VIRALFARM_API_URL`, `VIRALFARM_API_KEY` — check `~/.clawdbot/.env`
 
 ## Clawdbot Setup Lessons (Critical Gotchas)
 
@@ -77,6 +137,8 @@ All 3 bots have:
 4. **Reinstall app after scope changes** — OAuth flow required, reinstall from scratch
 5. **GitHub deploy keys are unique per repo** — cannot reuse across repos
 6. **Slack file access** — bots get Slack login page instead of files if `files:read`/`files:write` scopes are missing
+   - viralfarmbot needs `files:read`; alphawhalebot needs both `files:read` and `files:write`
+7. **Slack file download timeout** — set 15s timeout on file downloads or sessions can freeze indefinitely (commit `9117826`)
 
 ## Protocols Adopted (from SantaClawd)
 

@@ -2,13 +2,17 @@ import type { IncomingMessage, StreamCallback, ToolProgressCallback } from './ad
 import { lookupSession, logSessionEvent } from './sessions.js';
 import { AgentSessionPool } from './agent-session-pool.js';
 
-const BOT_WORKSPACE = process.env.BOT_WORKSPACE || '/root/clawd';
-const DEFAULT_MODEL = process.env.BOT_MODEL || 'claude-sonnet-4-6';
-const MAX_TURNS = parseInt(process.env.BOT_MAX_TURNS || '25', 10);
-const MAX_BUDGET = parseFloat(process.env.BOT_MAX_BUDGET || '0');
-const MAX_SESSIONS = parseInt(process.env.BOT_MAX_SESSIONS || '3', 10);
-const SESSION_TTL_MS = parseInt(process.env.BOT_SESSION_TTL_MS || `${60 * 60 * 1000}`, 10);
-const WARM_POOL = parseInt(process.env.BOT_WARM_POOL || '1', 10);
+// Config getters - read at runtime to ensure env is loaded
+const getConfig = () => ({
+  workspace: process.env.BOT_WORKSPACE || '/root/clawd',
+  model: process.env.BOT_MODEL || 'claude-sonnet-4-6',
+  maxTurns: parseInt(process.env.BOT_MAX_TURNS || '25', 10),
+  maxBudget: parseFloat(process.env.BOT_MAX_BUDGET || '0'),
+  maxSessions: parseInt(process.env.BOT_MAX_SESSIONS || '3', 10),
+  sessionTtlMs: parseInt(process.env.BOT_SESSION_TTL_MS || `${60 * 60 * 1000}`, 10),
+  warmPool: parseInt(process.env.BOT_WARM_POOL || '1', 10),
+});
+
 const ALLOWED_TOOLS = ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'WebSearch', 'WebFetch'] as const;
 
 let defaultPool: AgentSessionPool | null = null;
@@ -53,19 +57,21 @@ function threadKey(msg: IncomingMessage): string {
 
 function getDefaultPool(): AgentSessionPool {
   if (!defaultPool) {
+    const cfg = getConfig();
+    console.log(`[agent] Creating default pool: maxTurns=${cfg.maxTurns}, model=${cfg.model}, maxSessions=${cfg.maxSessions}`);
     defaultPool = new AgentSessionPool({
       sessionOptions: {
-        model: DEFAULT_MODEL,
-        maxTurns: MAX_TURNS,
-        maxBudgetUsd: MAX_BUDGET,
-        cwd: BOT_WORKSPACE,
+        model: cfg.model,
+        maxTurns: cfg.maxTurns,
+        maxBudgetUsd: cfg.maxBudget,
+        cwd: cfg.workspace,
         allowedTools: [...ALLOWED_TOOLS],
         settingSources: ['project'],
         env: loadEnvVars(),
       },
-      maxSessions: MAX_SESSIONS,
-      sessionTtlMs: SESSION_TTL_MS,
-      warmPool: WARM_POOL,
+      maxSessions: cfg.maxSessions,
+      sessionTtlMs: cfg.sessionTtlMs,
+      warmPool: cfg.warmPool,
     });
     defaultPool.startCleanup(5 * 60 * 1000);
   }
@@ -74,18 +80,20 @@ function getDefaultPool(): AgentSessionPool {
 
 function getOpusPool(): AgentSessionPool {
   if (!opusPool) {
+    const cfg = getConfig();
+    console.log(`[agent] Creating opus pool: maxTurns=${cfg.maxTurns}`);
     opusPool = new AgentSessionPool({
       sessionOptions: {
         model: 'claude-opus-4-6',
-        maxTurns: MAX_TURNS,
-        maxBudgetUsd: MAX_BUDGET,
-        cwd: BOT_WORKSPACE,
+        maxTurns: cfg.maxTurns,
+        maxBudgetUsd: cfg.maxBudget,
+        cwd: cfg.workspace,
         allowedTools: [...ALLOWED_TOOLS],
         settingSources: ['project'],
         env: loadEnvVars(),
       },
-      maxSessions: Math.max(1, Math.floor(MAX_SESSIONS / 2)),
-      sessionTtlMs: SESSION_TTL_MS,
+      maxSessions: Math.max(1, Math.floor(cfg.maxSessions / 2)),
+      sessionTtlMs: cfg.sessionTtlMs,
       warmPool: 0,
     });
     opusPool.startCleanup(5 * 60 * 1000);
@@ -137,6 +145,12 @@ export async function handleMessage(msg: IncomingMessage, onStream?: StreamCallb
   }
 
   return result;
+}
+
+/** Force-close a stuck session by its thread key. Called on hard timeout. */
+export function cancelAgentSession(key: string): void {
+  const pool = getDefaultPool();
+  pool.forceCloseSession(key);
 }
 
 // For complex tasks, use Opus

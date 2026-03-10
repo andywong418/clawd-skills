@@ -1,0 +1,2 @@
+# No Python packages required — only ffmpeg and ffprobe binaries needed.
+# Install ffmpeg: brew install ffmpeg  (macOS)  |  apt install ffmpeg  (Linux)

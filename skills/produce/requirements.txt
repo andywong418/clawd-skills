@@ -1,0 +1,4 @@
+# No Python packages required — stdlib only.
+# Binary dependencies handled by sub-skills:
+#   ffmpeg / ffprobe  (video-assembler, cross-poster)
+#   yt-dlp            (tiktok-downloader, optional)

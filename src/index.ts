@@ -1,10 +1,7 @@
 import { config } from 'dotenv';
 import { existsSync } from 'fs';
-import { SlackAdapter } from './adapters/slack.js';
-import { handleMessage, warmAgentPool, closeAllPools } from './agent.js';
-import { startCron, stopCron } from './cron.js';
 
-// Load env from multiple sources (later files override earlier)
+// Load env FIRST, before any other imports that might read process.env
 const envPaths = [
   `${process.env.HOME}/.clawdbot/.env`,  // Server-level keys (existing clawdbot setup)
   '.env',                                  // Local override (optional)
@@ -16,10 +13,14 @@ for (const p of envPaths) {
   }
 }
 
+// Now import modules that depend on env vars
+import { SlackAdapter } from './adapters/slack.js';
+import { handleMessage, warmAgentPool, closeAllPools } from './agent.js';
+import { startCron, stopCron } from './cron.js';
+
 async function main() {
   console.log('Naruto starting...');
 
-  // Validate required env vars
   const required = ['ANTHROPIC_API_KEY', 'SLACK_BOT_TOKEN', 'SLACK_APP_TOKEN'];
   const missing = required.filter((k) => !process.env[k]);
   if (missing.length > 0) {
@@ -28,23 +29,20 @@ async function main() {
     process.exit(1);
   }
 
-  // Start Slack adapter
   warmAgentPool();
   const slack = new SlackAdapter(handleMessage);
   await slack.start();
   console.log('[bot] Slack adapter connected');
 
-  // Start cron schedules
   await startCron();
   console.log('[bot] Cron schedules loaded');
 
   console.log('Naruto ready');
 
-  // Graceful shutdown
   const shutdown = async () => {
     console.log('\n[bot] Shutting down...');
     stopCron();
-    closeAllPools(); // Flush session memory before exit
+    closeAllPools();
     await slack.stop();
     process.exit(0);
   };

@@ -1,0 +1,11 @@
+# Core dependencies
+opencv-python>=4.8.0
+pillow>=10.0.0
+requests>=2.31.0
+numpy>=1.24.0
+
+# Face swap (optional but recommended)
+insightface>=0.7.3
+onnxruntime>=1.16.0
+# Use onnxruntime-gpu for GPU acceleration:
+# onnxruntime-gpu>=1.16.0
