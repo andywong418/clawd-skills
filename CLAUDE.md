@@ -112,6 +112,17 @@ When generating videos, editing content, or running production tasks, **always l
 - **openclaw-2** (24.199.102.212) — viralfarmbot server
 - **alphawhalebot** (167.71.171.101) — Alpha Content bot
 - **Slack bot:** Naruto (A0AHMHKE0Q6) on clawdbot-1
+### Droplet Resize/Reboot Safety
+
+**openclaw-2 has Cloudflare WARP (`warp-svc`) installed. It hijacks networking on boot and blocks SSH/console access.**
+
+Before any reboot, resize, or power cycle of openclaw-2:
+1. SSH in and run: `sudo systemctl disable warp-svc`
+2. Perform the resize/reboot
+3. Confirm SSH works after the droplet comes back up
+4. Re-enable if needed: `sudo systemctl enable warp-svc`
+
+**NEVER resize or reboot openclaw-2 without disabling warp-svc first.** If you skip this, the droplet becomes completely unreachable (no SSH, no DO console) and requires recovery mode to fix.
 
 ## Platform Behavior
 

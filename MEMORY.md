@@ -1,5 +1,5 @@
 
-<!-- Last distilled: 2026-03-10 (scheduled maintenance) from daily files 2026-02-28 through 2026-03-03 + git commits through 811c9bb + 4 missing skills added to catalog -->
+<!-- Last distilled: 2026-03-11 (scheduled maintenance) from daily files + git commits through 8c99f53 -->
 
 ## Context Recovery
 When losing context:
@@ -21,8 +21,11 @@ Migrated from clawdbot gateway → **Bun + Claude Agent SDK** (commit `3a764fb`,
 - **Auto-reads thread context** when bot is tagged in a thread (commit `7b8631b`)
 - **No budget limits** on any bot — removed from all bots and templates (commit `b5f1521`)
 - **Stuck timer** — posts user warning after `BOT_STUCK_THRESHOLD_MS` (default 5min) if still thinking; clears on completion/error (commit `src/adapters/slack.ts`)
-- **Force-close on hard timeout** — `cancelAgentSession(key)` / `pool.forceCloseSession(key)` added in `src/agent.ts` + `src/agent-session-pool.ts` (uncommitted); extends stuck handling beyond warning to actually killing the session
+- **Force-close on hard timeout** — `cancelAgentSession(key)` / `pool.forceCloseSession(key)` in `src/agent.ts` + `src/agent-session-pool.ts`; extends stuck handling beyond warning to actually killing the session
 - **file_share subtype** allowed through message handler (commit `34ac26e`)
+- **Auto-memory capture** — saves session summary to daily memory on session close, compaction, and shutdown (commit `d6cadfc`)
+- **SESSION-STATE.md** — created at session start, updated every ~10 tool calls and before major responses; survives context compaction + session restarts (commit `8c99f53`)
+- **BOT_MAX_TURNS fix** — dotenv now loaded BEFORE module imports in `src/index.ts`; `agent.ts` uses `getConfig()` at runtime instead of reading env at import time (commit `c99febd`)
 
 clawdbot-setup templates also updated to use Agent SDK pattern.
 
@@ -35,6 +38,8 @@ clawdbot-setup templates also updated to use Agent SDK pattern.
 | alphawhalebot | A0AHSBCJU3X | alphawhalebot | 167.71.171.101 | Alpha Whale Intern app |
 
 All bots run Agent SDK on their respective servers.
+
+**openclaw-2 WARP safety:** `warp-svc` (Cloudflare WARP) is installed and hijacks networking on boot. **Before any reboot/resize/power cycle:** `sudo systemctl disable warp-svc` first, then reboot, then verify SSH. Skipping this makes the droplet completely unreachable (no SSH, no DO console).
 
 **Slack scopes on all bots:** `app_mentions:read, channels:history, channels:read, chat:write, files:read, files:write, im:history, im:write, users:read`
 
