@@ -7,7 +7,7 @@ import { join } from 'path';
 // Config getters - read at runtime to ensure env is loaded
 const getConfig = () => ({
   workspace: process.env.BOT_WORKSPACE || '/root/clawd',
-  model: process.env.BOT_MODEL || 'claude-sonnet-4-6',
+  model: process.env.BOT_MODEL || 'claude-opus-4-6',
   maxTurns: parseInt(process.env.BOT_MAX_TURNS || '25', 10),
   maxBudget: parseFloat(process.env.BOT_MAX_BUDGET || '0'),
   maxSessions: parseInt(process.env.BOT_MAX_SESSIONS || '3', 10),

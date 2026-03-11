@@ -58,7 +58,7 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
         cwd: BOT_WORKSPACE,
         maxTurns: 30,
         ...(schedule.maxBudgetUsd ? { maxBudgetUsd: schedule.maxBudgetUsd } : {}),
-        model: schedule.model || 'claude-sonnet-4-6',
+        model: schedule.model || 'claude-opus-4-6',
         settingSources: ['project'],
         env: { ...process.env } as Record<string, string>,
       },
