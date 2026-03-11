@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { query } from '@anthropic-ai/claude-agent-sdk';
+import { spawn, type ChildProcess } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -32,9 +33,25 @@ function loadSchedules(): Schedule[] {
   return [];
 }
 
+/** Kill a subprocess tree (process + children). */
+function killProcessTree(proc: ChildProcess): void {
+  if (!proc.pid || proc.killed) return;
+  try {
+    process.kill(-proc.pid, 'SIGTERM');
+  } catch {
+    try { proc.kill('SIGTERM'); } catch { /* already dead */ }
+  }
+  setTimeout(() => {
+    if (!proc.killed) {
+      try { proc.kill('SIGKILL'); } catch { /* ignore */ }
+    }
+  }, 5000);
+}
+
 async function executeSchedule(schedule: Schedule): Promise<void> {
   console.log(`[cron] Executing schedule: ${schedule.name}`);
   const startTime = Date.now();
+  let childProc: ChildProcess | null = null;
 
   const systemAppend = schedule.channelId
     ? `\n\nThis is a scheduled task: "${schedule.name}"\nPost results to Slack channel ${schedule.channelId} using the slack_send_message tool.`
@@ -42,7 +59,7 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
 
   try {
     let result = '';
-    for await (const message of query({
+    const q = query({
       prompt: schedule.prompt,
       options: {
         systemPrompt: {
@@ -61,8 +78,20 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
         model: schedule.model || 'claude-opus-4-6',
         settingSources: ['project'],
         env: { ...process.env } as Record<string, string>,
+        spawnClaudeCodeProcess: (opts: { command: string; args: string[]; cwd: string; env: Record<string, string> }) => {
+          const proc = spawn(opts.command, opts.args, {
+            cwd: opts.cwd,
+            env: opts.env,
+            stdio: ['pipe', 'pipe', 'pipe'],
+            detached: false,
+          });
+          childProc = proc;
+          return proc;
+        },
       },
-    })) {
+    });
+
+    for await (const message of q) {
       if (message.type === 'result') {
         if (message.subtype === 'success') {
           result = message.result;
@@ -77,6 +106,37 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
     console.log(`[cron] Schedule "${schedule.name}" completed in ${elapsed}s`);
   } catch (err) {
     console.error(`[cron] Schedule "${schedule.name}" failed:`, err);
+  } finally {
+    if (childProc) {
+      killProcessTree(childProc);
+      console.log(`[cron] Killed subprocess for "${schedule.name}"`);
+    }
+  }
+}
+
+/** Kill orphaned agent-sdk processes older than 20 minutes. Safety net. */
+async function cleanupOrphanedProcesses(): Promise<void> {
+  try {
+    const proc = Bun.spawn(['bash', '-c',
+      `ps aux | grep 'claude-agent-sdk' | grep -v grep | awk '{print $2}' | while read pid; do
+        if [ "$pid" != "$$" ] && [ "$pid" != "${process.pid}" ]; then
+          elapsed=$(ps -o etimes= -p $pid 2>/dev/null | tr -d ' ')
+          if [ -n "$elapsed" ] && [ "$elapsed" -gt 1200 ]; then
+            echo "Killing orphaned agent-sdk process $pid (age: ${elapsed}s)"
+            kill -TERM $pid 2>/dev/null
+            sleep 2
+            kill -9 $pid 2>/dev/null
+          fi
+        fi
+      done`
+    ], { stdout: 'pipe', stderr: 'pipe' });
+    await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+    if (stdout.trim()) {
+      console.log(`[cron:cleanup] ${stdout.trim()}`);
+    }
+  } catch {
+    // Ignore cleanup errors
   }
 }
 
@@ -114,22 +174,27 @@ export async function startCron(): Promise<void> {
   if (schedules.length === 0) {
     console.log('[cron] No schedules.json found. Using defaults.');
     setupDefaultSchedules();
-    return;
-  }
+  } else {
+    for (const schedule of schedules) {
+      if (!cron.validate(schedule.cronExpression)) {
+        console.warn(`[cron] Invalid cron expression for "${schedule.name}": ${schedule.cronExpression}`);
+        continue;
+      }
 
-  for (const schedule of schedules) {
-    if (!cron.validate(schedule.cronExpression)) {
-      console.warn(`[cron] Invalid cron expression for "${schedule.name}": ${schedule.cronExpression}`);
-      continue;
+      const task = cron.schedule(schedule.cronExpression, () => {
+        executeSchedule(schedule);
+      });
+
+      activeTasks.set(schedule.id, task);
+      console.log(`[cron] Scheduled "${schedule.name}" — ${schedule.cronExpression}`);
     }
-
-    const task = cron.schedule(schedule.cronExpression, () => {
-      executeSchedule(schedule);
-    });
-
-    activeTasks.set(schedule.id, task);
-    console.log(`[cron] Scheduled "${schedule.name}" — ${schedule.cronExpression}`);
   }
+
+  // Always run: orphan process cleanup every 10 minutes
+  cron.schedule('*/10 * * * *', () => {
+    cleanupOrphanedProcesses();
+  });
+  console.log('[cron] Scheduled orphan process cleanup — every 10 minutes');
 }
 
 export function stopCron(): void {
