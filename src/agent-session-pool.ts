@@ -93,6 +93,8 @@ class AgentSession {
         model: this.options.model,
         maxTurns: this.options.maxTurns,
         ...(this.options.maxBudgetUsd > 0 ? { maxBudgetUsd: this.options.maxBudgetUsd } : {}),
+        thinking: { type: 'adaptive' },
+        effort: 'high',
         canUseTool: async () => ({ behavior: 'allow' as const }),
         cwd: this.options.cwd,
         allowedTools: this.options.allowedTools,

@@ -71,6 +71,8 @@ async function executeSchedule(schedule: Schedule): Promise<void> {
           'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep',
           'WebSearch', 'WebFetch',
         ],
+        thinking: { type: 'adaptive' as const },
+        effort: 'high' as const,
         canUseTool: async () => ({ behavior: 'allow' as const }),
         cwd: BOT_WORKSPACE,
         maxTurns: 30,
