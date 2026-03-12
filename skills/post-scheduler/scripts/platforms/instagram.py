@@ -48,7 +48,7 @@ def _upload_to_fal(video_path: str) -> str:
         video_data = f.read()
 
     init_req = urllib.request.Request(
-        "https://fal.ai/api/storage/upload/initiate",
+        "https://fal.run/api/storage/upload/initiate",
         data=json.dumps({"file_name": path.name, "content_type": "video/mp4"}).encode(),
         headers={"Authorization": f"Key {fal_key}", "Content-Type": "application/json"},
         method="POST",

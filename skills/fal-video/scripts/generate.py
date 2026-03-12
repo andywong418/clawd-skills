@@ -63,7 +63,7 @@ def upload_image(image_path: str, api_key: str) -> str:
     
     # Get upload URL from fal.ai
     upload_info = api_request(
-        "https://fal.ai/api/storage/upload/initiate",
+        "https://fal.run/api/storage/upload/initiate",
         api_key,
         {"file_name": path.name, "content_type": f"image/{path.suffix[1:]}"}
     )
