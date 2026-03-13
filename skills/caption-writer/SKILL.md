@@ -72,12 +72,12 @@ python3 skills/caption-writer/scripts/write.py --list-vibes
   Instagram Reels · funny
 ────────────────────────────────────────────────────
 
-  POV: you trusted the barber 💈
+  POV: you trusted the barber
 
-  Kendrick said hold on lemme think about this one 😭
+  Kendrick said hold on lemme think about this one
   At least the drip is immaculate fr
 
-  follow for more unhinged content 🫡
+  follow for more unhinged content
 
   #barbershop #kendricklamar #hairtransformation
   #funny #viral #reels #fyp #comedy

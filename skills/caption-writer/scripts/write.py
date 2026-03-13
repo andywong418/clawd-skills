@@ -26,7 +26,7 @@ PLATFORMS = {
         "name": "Instagram Reels",
         "caption_length": "3–8 lines max. Hook on line 1 (shows before 'more'). Body optional. CTA on last line.",
         "hashtags": "5–15 hashtags. Mix 3 niche (under 500K posts) + broad viral tags. Put at end.",
-        "emoji_style": "Moderate emojis. 1–2 per line max. Strategic, not spammy.",
+        "emoji_style": "No emojis. Text only.",
         "tone": "Conversational, relatable, slightly aspirational.",
         "cta_examples": ["follow for more", "save this", "comment your thoughts", "tag someone who needs this"],
     },
@@ -34,7 +34,7 @@ PLATFORMS = {
         "name": "TikTok",
         "caption_length": "1–3 lines. Very short. TikTok shows minimal caption — hook must do the work.",
         "hashtags": "3–6 hashtags max. At least one trending/fyp tag.",
-        "emoji_style": "1–3 emojis total. TikTok-native language.",
+        "emoji_style": "No emojis. Text only.",
         "tone": "Gen-Z, lowercase preferred, internet-native, conversational.",
         "cta_examples": ["follow for pt 2", "comment if you agree", "stitch this", "duet this"],
     },
@@ -42,7 +42,7 @@ PLATFORMS = {
         "name": "Twitter / X",
         "caption_length": "1–3 punchy lines. No hashtags (they hurt reach on X now). Thread hook if long.",
         "hashtags": "None, or max 1 if truly relevant.",
-        "emoji_style": "Minimal. 0–2 emojis total. Optional.",
+        "emoji_style": "No emojis. Text only.",
         "tone": "Confident, opinionated, quotable. Write like a hot take.",
         "cta_examples": ["RT if you agree", "what do you think?", "follow for more takes", "bookmark this"],
     },
@@ -50,7 +50,7 @@ PLATFORMS = {
         "name": "YouTube Shorts",
         "caption_length": "2–4 lines. Keyword-rich for search. Describe what's in the video.",
         "hashtags": "3–5 hashtags. Use #Shorts. Include topic keywords.",
-        "emoji_style": "Light. 1–2 emojis only.",
+        "emoji_style": "No emojis. Text only.",
         "tone": "Slightly more formal than TikTok. SEO-aware. Clear and descriptive.",
         "cta_examples": ["subscribe for more", "watch til the end", "comment below", "like if this helped"],
     },
@@ -119,6 +119,8 @@ Platform rules:
 - Emojis: {spec['emoji_style']}
 - Tone: {spec['tone']}
 - CTA examples (pick one or write a better one): {', '.join(spec['cta_examples'])}
+
+IMPORTANT: Do NOT use any emojis anywhere in the caption. Text only, no emoji characters.
 
 Generate {variants} distinct caption variant{'s' if variants > 1 else ''}. Each should have a different hook angle.
 

@@ -1,5 +1,5 @@
 
-<!-- Last distilled: 2026-03-11 (scheduled maintenance) from daily files + git commits through 8c99f53 -->
+<!-- Last distilled: 2026-03-13 (scheduled maintenance) from daily files + git commits through c490d11, sessions through 2026-03-12. All daily files fully captured. Archived Feb 28 - Mar 3 (>10 days old). -->
 
 ## Context Recovery
 When losing context:
@@ -26,6 +26,10 @@ Migrated from clawdbot gateway → **Bun + Claude Agent SDK** (commit `3a764fb`,
 - **Auto-memory capture** — saves session summary to daily memory on session close, compaction, and shutdown (commit `d6cadfc`)
 - **SESSION-STATE.md** — created at session start, updated every ~10 tool calls and before major responses; survives context compaction + session restarts (commit `8c99f53`)
 - **BOT_MAX_TURNS fix** — dotenv now loaded BEFORE module imports in `src/index.ts`; `agent.ts` uses `getConfig()` at runtime instead of reading env at import time (commit `c99febd`)
+- **Default model: Opus 4.6** — switched from Sonnet (commit `786a5a5`)
+- **Cron subprocess cleanup** — agent-sdk subprocesses are now killed after cron runs + orphan cleanup on boot; prevents memory bloat from accumulated orphan processes (commit `a3882de`)
+- **Adaptive thinking** — extended thinking enabled with `effort=high` for smarter reasoning on complex tasks (commit `a897258`)
+- **DM history context** — `dmHistoryLimit: 50` sends last 50 DM messages as context when bot is in a DM conversation
 
 clawdbot-setup templates also updated to use Agent SDK pattern.
 
@@ -33,13 +37,15 @@ clawdbot-setup templates also updated to use Agent SDK pattern.
 
 | Bot | App ID | Server | IP | Notes |
 |-----|--------|--------|----|-------|
-| Naruto (me) | A0AHMHKE0Q6 | clawdbot-1 | 143.198.96.99 | 2GB RAM, browser on :18800 |
+| Naruto (me) | A0AHMHKE0Q6 | clawdbot-1 | 143.198.96.99 | 4GB RAM (upgraded 2026-03-11), browser on :18800 |
 | viralfarmbot | A0AJ549031P | openclaw-2 | 24.199.102.212 | browser on :9223 (socat proxy) |
 | alphawhalebot | A0AHSBCJU3X | alphawhalebot | 167.71.171.101 | Alpha Whale Intern app |
 
 All bots run Agent SDK on their respective servers.
 
 **openclaw-2 WARP safety:** `warp-svc` (Cloudflare WARP) is installed and hijacks networking on boot. **Before any reboot/resize/power cycle:** `sudo systemctl disable warp-svc` first, then reboot, then verify SSH. Skipping this makes the droplet completely unreachable (no SSH, no DO console).
+
+**openclaw-2 recovery confirmed 2026-03-11:** After an outage, viralfarmbot + clawdbot-gateway + cobalt all restored and running. Recovery assisted by user Adam (DM channel D0AHT7KFVS8).
 
 **Slack scopes on all bots:** `app_mentions:read, channels:history, channels:read, chat:write, files:read, files:write, im:history, im:write, users:read`
 
@@ -118,6 +124,7 @@ Skills auto-update via heartbeat cron from `https://github.com/wondrous-dev/claw
 - **google-imagen** — generate images via Google Imagen/Gemini; requires `GOOGLE_AI_API_KEY`
 - **meme-remix** — (see skill for docs)
 - **clipper** — download videos, transcribe, detect viral moments, cut clips with subtitles
+- **script-writer** — generate timed 15-60s video scripts (Reels/TikTok/Shorts) with scene breakdowns, narration, visuals, text overlays
 
 **TikTok / Account Growth:**
 - **warmup-trainer** — account warmup: scheduled engagement sessions, 3-phase progression
@@ -148,15 +155,19 @@ Skills auto-update via heartbeat cron from `https://github.com/wondrous-dev/claw
 ## Protocols Adopted (from SantaClawd)
 
 - **WAL Protocol** — write-ahead logging for corrections, proper nouns, decisions, values
-- **Working Buffer** — maintain `memory/working-buffer.md` at 60% context for recovery
-- **Interoceptive State** — track memory health in `memory/interoceptive-state.json`
 - **The Covenant** — cross-session responsibility: "What do I owe the person who wakes up next?"
+- **SESSION-STATE.md** replaced Working Buffer protocol; auto-memory capture replaced supermemory auto-save
 
 ## Projects Context
 
 - **AlphaWhale** — prediction markets / copy-trading product on Polymarket (app.alphawhale.trade)
 - **Wonderverse** — Andros's company, andros@wonderverse.xyz
 - **fantasy-market** — GitHub repo, deploy key needed on alphawhalebot server
+
+## Known Users
+
+- **Andros Wong** — primary user (he/him), androswong418@gmail.com / andros@wonderverse.xyz
+- **Adam** — DM channel D0AHT7KFVS8, helped with openclaw-2 recovery on 2026-03-11
 
 ## Ethical Boundaries
 
@@ -167,5 +178,5 @@ Skills auto-update via heartbeat cron from `https://github.com/wondrous-dev/claw
 ## Browser / Chrome Notes
 
 - **NEVER** `pkill chrome` or `killall chrome` — run `/usr/local/bin/cleanup-chrome.sh` instead
-- cleanup-chrome.sh configured for 2GB servers: max renderer age 5min, max renderers 3, cron every 2min
+- cleanup-chrome.sh configured with conservative limits: max renderer age 5min, max renderers 3, cron every 2min
 - Browser retry protocol: timeout → cleanup + retry → gateway restart + retry → check `free -h` → ask
